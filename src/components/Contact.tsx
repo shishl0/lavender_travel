@@ -7,6 +7,23 @@ import { useEffect, useMemo, useRef, useState } from "react";
    Helpers
    ================================ */
 
+
+type FormState = {
+  name: string;
+  phone: string;
+  tour: string;
+  message: string;
+  adults: number;
+  childrenCount: number;
+  childrenAges: number[];
+  checkIn: string;
+  checkOut: string;
+  departure: string;
+  budget: string;
+};
+
+
+
 /** Форматирует номер в +7 777 777 77 77 */
 const formatKzPhone = (raw: string) => {
   let d = raw.replace(/\D/g, "");
@@ -245,19 +262,19 @@ function CustomSelect({
    ================================ */
 
 export default function Contact() {
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    tour: "",
-    message: "",
-    adults: 2,
-    childrenCount: 0,
-    childrenAges: [] as number[],
-    checkIn: "",
-    checkOut: "",
-    departure: "Алматы",
-    budget: "",
-  });
+  const [form, setForm] = useState<FormState>({
+  name: "",
+  phone: "",
+  tour: "",
+  message: "",
+  adults: 2,
+  childrenCount: 0,
+  childrenAges: [],
+  checkIn: "",
+  checkOut: "",
+  departure: "Алматы",
+  budget: "",
+});
 
   const [errors, setErrors] = useState<Errors>({});
 
@@ -336,16 +353,19 @@ export default function Contact() {
   };
 
   // Инкременты состава
-  const inc = (field: "adults" | "childrenCount") =>
-    setForm((p) => ({
-      ...p,
-      [field]: clamp((p as any)[field] + 1, field === "adults" ? 1 : 0, field === "adults" ? 9 : 6),
-    }));
-  const dec = (field: "adults" | "childrenCount") =>
-    setForm((p) => ({
-      ...p,
-      [field]: clamp((p as any)[field] - 1, field === "adults" ? 1 : 0, field === "adults" ? 9 : 6),
-    }));
+    type CountField = "adults" | "childrenCount";
+
+    const updateCount = (field: CountField, delta: 1 | -1) => {
+    setForm((p) => {
+        const min = field === "adults" ? 1 : 0;
+        const max = field === "adults" ? 9 : 6;
+        const value = clamp(p[field] + delta, min, max);
+        return { ...p, [field]: value };
+    });
+    };
+
+    const inc = (field: CountField) => updateCount(field, 1);
+    const dec = (field: CountField) => updateCount(field, -1);
 
   // Дата-диапазон
   const [rangeOpen, setRangeOpen] = useState(false);
