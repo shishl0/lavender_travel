@@ -1,0 +1,200 @@
+@import "tailwindcss";
+
+/* =========================
+   ТЕМА / ТОКЕНЫ
+   ========================= */
+:root{
+  /* Цвета */
+  --lavender:#7B4DBB;  /* акцент (минимально) */
+  --navy:#1B1F3B;      /* заголовки */
+  --ink:#111827;       /* основной текст */
+  --muted:#6B7280;     /* вторичный текст */
+  --bg:#FFFFFF;        /* фон страницы */
+  --tint:#F8FAFC;      /* светлый фон секций */
+  --brand:#F7B500;     /* жёлтая CTA */
+
+  /* Движение */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 160ms;
+  --dur-med: 200ms;
+  --dur-slow: 300ms;
+}
+
+@media (max-width: 640px) {
+  .destinations {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+  .destinations > * {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* =========================
+   БАЗА
+   ========================= */
+html, body { height: 100%; }
+body{
+  background: var(--bg);
+  color: var(--ink);
+  font-feature-settings: "liga" 1, "kern" 1;
+  scroll-behavior: smooth;
+}
+
+/* =========================
+   УТИЛИТЫ ВЁРСТКИ
+   ========================= */
+.container{ @apply max-w-7xl mx-auto px-4 md:px-6; }
+.section{ @apply py-16 md:py-20; }
+
+/* =========================
+   КНОПКИ
+   ========================= */
+.btn-primary{
+  background: var(--brand);
+  color: #111827;
+  @apply rounded-xl font-semibold px-5 py-3;
+  transition: filter var(--dur-med) var(--ease-out);
+}
+.btn-primary:hover{ filter: brightness(1.05); }
+
+.btn-ghost{
+  @apply rounded-xl font-semibold px-5 py-3 border;
+  border-color: var(--lavender);
+  color: var(--navy);
+  transition: background var(--dur-med) var(--ease-out), color var(--dur-med) var(--ease-out), border-color var(--dur-med) var(--ease-out);
+}
+.btn-ghost:hover{ background: var(--tint); }
+
+/* Единая «пружинка» нажатия */
+.press{
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-med), filter var(--dur-fast);
+  will-change: transform;
+}
+.press:active{
+  transform: translateY(1px) scale(0.985);
+  filter: brightness(0.98);
+}
+@media (prefers-reduced-motion: reduce){
+  .press, .press:active{ transition: none; transform: none; filter: none; }
+}
+
+/* =========================
+   КАРТОЧКИ / МЕЛОЧИ
+   ========================= */
+.card{ @apply bg-white rounded-2xl shadow-sm ring-1 ring-gray-100; transition: transform var(--dur-slow) var(--ease-out), box-shadow var(--dur-med); }
+.card:hover{ transform: translateY(-2px); @apply hover:shadow-lg; }
+
+.kicker{ @apply text-xs tracking-widest uppercase font-semibold; color: var(--lavender); }
+
+/* Плавающая WA-кнопка */
+.fab{
+  position: fixed; right: 18px; bottom: 18px; z-index: 50;
+  width: 56px; height: 56px; border-radius: 9999px;
+  background: var(--lavender); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 10px 24px rgba(123,77,187,.35);
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-med);
+}
+.fab:hover{ transform: translateY(-1px); }
+.fab:active{ transform: translateY(1px) scale(.98); }
+
+/* Мягкая дымка в hero */
+.hero-haze{
+  background: radial-gradient(closest-side, #EEF2FF 0%, transparent 70%);
+  filter: blur(.5px); opacity: .6;
+}
+
+/* =========================
+   АНИМАЦИИ ПОЯВЛЕНИЯ
+   ========================= */
+.fade-in{ animation: fadeIn 600ms var(--ease-out) both; }
+@keyframes fadeIn{
+  from{ opacity: 0; transform: translateY(6px); }
+  to{   opacity: 1; transform: none; }
+}
+
+/* =========================
+   SELECT (триггер/дропдаун)
+   ========================= */
+/* Триггер оформлен как input */
+.select-trigger{
+  @apply w-full border px-4 bg-white;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: box-shadow var(--dur-med), border-color var(--dur-med), background var(--dur-med);
+}
+.select-trigger:focus{
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(123,77,187,0.12);
+  border-color: rgba(123,77,187,0.5);
+}
+
+/* Дропдаун */
+.select-dropdown{
+  position: absolute; left: 0; right: 0; z-index: 50;
+  margin-top: .5rem;
+  border-radius: 1rem; background: #fff;
+  box-shadow: 0 10px 30px rgba(17,24,39,.08);
+  border: 1px solid rgba(17,24,39,.08);
+  overflow: hidden;
+  animation: fadeScale var(--dur-fast) var(--ease-out) both;
+}
+.select-dropdown li{
+  padding: .5rem .75rem; font-size: .95rem;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer;
+  transition: background-color var(--dur-fast), color var(--dur-fast);
+}
+.select-dropdown li:hover{ background: var(--tint); }
+
+@keyframes fadeScale{
+  from{ opacity: 0; transform: translateY(-4px) scale(.98); }
+  to{   opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* =========================
+   INPUT: возраст (number)
+   ========================= */
+.age-wrap{ position: relative; }
+
+.age-input{
+  @apply w-full border rounded-2xl px-4 py-2 bg-white text-base text-gray-900;
+  height: 52px; box-sizing: border-box;
+  padding-right: 3.5rem; /* место под кастомные стрелки */
+  transition: box-shadow var(--dur-med), border-color var(--dur-med);
+}
+.age-input:focus{
+  outline: none;
+  border-color: var(--lavender);
+  box-shadow: 0 0 0 3px rgba(123,77,187,.15);
+}
+/* Скрыть нативные спиннеры */
+.age-input::-webkit-outer-spin-button,
+.age-input::-webkit-inner-spin-button{ -webkit-appearance: none; margin: 0; }
+.age-input{ -moz-appearance: textfield; }
+
+/* Кастомные стрелки */
+.age-step{
+  position: absolute; right: 8px;
+  width: 34px; height: 22px;
+  border: 1px solid rgba(17,24,39,.12);
+  background: #fff; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 1px 0 rgba(17,24,39,.04);
+  cursor: pointer; user-select: none;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.age-up{ top: 7px; }
+.age-down{ bottom: 7px; }
+.age-step:active{ transform: translateY(1px) scale(.98); }
+
+/* Иконки стрелок */
+.age-step::before{
+  content: "";
+  width: 14px; height: 14px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='14' height='14' fill='none' stroke='%235B5F71' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 15 12 9 18 15'/></svg>");
+  background-repeat: no-repeat; background-position: center;
+}
+.age-down::before{ transform: rotate(180deg); }
