@@ -1,0 +1,113 @@
+{
+  "brand": "Lavender Travel KZ",
+  "nav": { "tours": "Туры", "why": "Почему мы", "contacts": "Контакты", "whatsapp": "WhatsApp" },
+
+  "hero": {
+    "kicker": "Lavender Travel",
+    "titleTop": "Путешествуй красиво",
+    "titleBottom": "с Lavender Travel",
+    "subtitle": "Авторские туры по миру, продуманные маршруты и забота 24/7. Минимум суеты — максимум впечатлений.",
+    "ctaPrimary": "Выбрать тур",
+    "ctaSecondary": "Связаться",
+    "imageAlt": "Море и закат"
+  },
+
+  "contact": {
+    "kicker": "Связаться",
+    "title": "Давайте подберём идеальный отдых",
+    "subtitle": "Укажите состав, даты и пожелания — пришлём подбор в WhatsApp.",
+    "links": { "instagram": "Instagram", "whatsappLabel": "Телефон" },
+
+    "form": {
+      "name": { "label": "Имя", "placeholder": "Ваше имя" },
+      "phone": { "label": "Телефон / WhatsApp", "placeholder": "+7 777 777 77 77", "short": "Телефон" },
+      "tour": {
+        "label": "Куда хотите поехать?",
+        "placeholder": "Турция, Таиланд, ОАЭ...",
+        "short": "Куда",
+        "suggestions": [
+          "Турция",
+          "Таиланд",
+          "ОАЭ (Дубай)",
+          "Вьетнам (Фукуок)",
+          "Египет (Шарм-эль-Шейх)",
+          "Турция (Каппадокия)"
+        ]
+      },
+      "departure": {
+        "label": "Город вылета",
+        "placeholder": "Выберите город",
+        "options": { "almaty": "Алматы", "astana": "Астана", "other": "Другой" }
+      },
+      "budget": { "label": "Бюджет (опционально)", "placeholder": "Напр.: до 600$ на человека", "labelShort": "Бюджет" },
+      "adults": { "label": "Взрослые", "short": "Взрослые" },
+      "children": { "label": "Дети", "short": "Дети", "ages": "возраст: {{ages}}" },
+      "childAge": { "label": "Возраст ребёнка {{index}}" },
+      "dates": {
+        "label": "Даты проживания",
+        "empty": "Выберите период проживания",
+        "checkIn": "Заезд",
+        "checkOut": "Выезд",
+        "preset": "+{{n}} ночей",
+        "needCheckIn": "Сначала выберите дату заезда",
+        "apply": "Применить",
+        "nights_one": "{{count}} ночь",
+        "nights_few": "{{count}} ночи",
+        "nights_many": "{{count}} ночей"
+      },
+      "message": { "label": "Комментарий", "placeholder": "Пожелания/даты, тип отдыха, особые запросы" },
+      "submit": "Отправить",
+      "whatsapp": "WhatsApp",
+      "note": "* Форма откроет WhatsApp с заполненным сообщением."
+    },
+
+    "errors": {
+      "name": "Введите имя (минимум 2 символа)",
+      "phone": "Укажите корректный номер в формате +7 777 777 77 77",
+      "departure": "Выберите город вылета",
+      "tour": "Укажите страну/город (например: Турция, ОАЭ, Таиланд)",
+      "datesRequired": "Выберите период проживания (заезд и выезд)",
+      "datesOrder": "Дата выезда должна быть позже даты заезда",
+      "adults": "Минимум 1 взрослый",
+      "childrenAges": "Укажите возраст каждого ребёнка (0–17)"
+    },
+
+    "wa": {
+      "title": "Заявка с сайта Lavender Travel",
+      "name": "Имя",
+      "phone": "Телефон",
+      "tour": "Куда",
+      "adults": "Взрослые",
+      "children": "Дети",
+      "childrenAges": "возраст: {{ages}}",
+      "checkIn": "Заезд",
+      "checkOut": "Выезд",
+      "nights": "{{count}} ночей",
+      "departure": "Город вылета",
+      "budget": "Бюджет",
+      "message": "Комментарий"
+    }
+  },
+
+  "dest": {
+    "title": "Популярные направления",
+    "cta": "Подобрать тур",
+    "items": { "turkey": "Турция", "vietnam": "Вьетнам", "thailand": "Таиланд", "uae": "ОАЭ", "egypt": "Египет" }
+  },
+
+  "why": {
+    "title": "Почему выбирают нас",
+    "items": {
+      "individual": { "title": "Индивидуальный подход", "text": "Маршруты под ваши даты и бюджет." },
+      "support": { "title": "Поддержка 24/7", "text": "Мы на связи до, во время и после поездки." },
+      "guides": { "title": "Опытные гиды", "text": "Проверенные партнёры и экскурсии." },
+      "prices": { "title": "Прозрачные цены", "text": "Без скрытых доплат и сюрпризов." }
+    }
+  },
+
+  "footer": {
+    "copy": "© {{year}} Lavender Travel KZ — Авторские туры • Вылеты из Казахстана",
+    "instagram": "Instagram",
+    "whatsapp": "WhatsApp"
+  }
+}

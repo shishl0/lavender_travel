@@ -1,0 +1,112 @@
+{
+  "brand": "Lavender Travel KZ",
+  "nav": { "tours": "Tours", "why": "Why us", "contacts": "Contacts", "whatsapp": "WhatsApp" },
+
+  "hero": {
+    "kicker": "Lavender Travel",
+    "titleTop": "Travel beautifully",
+    "titleBottom": "with Lavender Travel",
+    "subtitle": "Signature tours, thoughtful itineraries and 24/7 care. Less hassle — more memories.",
+    "ctaPrimary": "Browse tours",
+    "ctaSecondary": "Contact",
+    "imageAlt": "Sea and sunset"
+  },
+
+  "contact": {
+    "kicker": "Contact",
+    "title": "Let’s find your perfect getaway",
+    "subtitle": "Tell us your group, dates and wishes — we’ll send options via WhatsApp.",
+    "links": { "instagram": "Instagram", "whatsappLabel": "Phone" },
+
+    "form": {
+      "name": { "label": "Name", "placeholder": "Your name" },
+      "phone": { "label": "Phone / WhatsApp", "placeholder": "+7 777 777 77 77", "short": "Phone" },
+      "tour": {
+        "label": "Where would you like to go?",
+        "placeholder": "Turkey, Thailand, UAE...",
+        "short": "Destination",
+        "suggestions": [
+          "Turkey",
+          "Thailand",
+          "UAE (Dubai)",
+          "Vietnam (Phu Quoc)",
+          "Egypt (Sharm El Sheikh)",
+          "Turkey (Cappadocia)"
+        ]
+      },
+      "departure": {
+        "label": "Departure city",
+        "placeholder": "Select a city",
+        "options": { "almaty": "Almaty", "astana": "Astana", "other": "Other" }
+      },
+      "budget": { "label": "Budget (optional)", "placeholder": "e.g. up to $600 per person", "labelShort": "Budget" },
+      "adults": { "label": "Adults", "short": "Adults" },
+      "children": { "label": "Children", "short": "Children", "ages": "ages: {{ages}}" },
+      "childAge": { "label": "Child {{index}} age" },
+      "dates": {
+        "label": "Stay dates",
+        "empty": "Choose stay period",
+        "checkIn": "Check-in",
+        "checkOut": "Check-out",
+        "preset": "+{{n}} nights",
+        "needCheckIn": "Pick a check-in date first",
+        "apply": "Apply",
+        "nights_one": "{{count}} night",
+        "nights_other": "{{count}} nights"
+      },
+      "message": { "label": "Comment", "placeholder": "Wishes/dates, trip style, special requests" },
+      "submit": "Send",
+      "whatsapp": "WhatsApp",
+      "note": "* The form will open WhatsApp with a prefilled message."
+    },
+
+    "errors": {
+      "name": "Enter a name (at least 2 characters)",
+      "phone": "Provide a valid number like +7 777 777 77 77",
+      "departure": "Choose a departure city",
+      "tour": "Specify a country/city (e.g., Turkey, UAE, Thailand)",
+      "datesRequired": "Choose a stay period (check-in & check-out)",
+      "datesOrder": "Check-out must be later than check-in",
+      "adults": "At least 1 adult",
+      "childrenAges": "Provide each child’s age (0–17)"
+    },
+
+    "wa": {
+      "title": "Request from Lavender Travel website",
+      "name": "Name",
+      "phone": "Phone",
+      "tour": "Destination",
+      "adults": "Adults",
+      "children": "Children",
+      "childrenAges": "ages: {{ages}}",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "nights": "{{count}} nights",
+      "departure": "Departure city",
+      "budget": "Budget",
+      "message": "Comment"
+    }
+  },
+
+  "dest": {
+    "title": "Popular destinations",
+    "cta": "Pick a tour",
+    "items": { "turkey": "Turkey", "vietnam": "Vietnam", "thailand": "Thailand", "uae": "UAE", "egypt": "Egypt" }
+  },
+
+  "why": {
+    "title": "Why travelers choose us",
+    "items": {
+      "individual": { "title": "Tailored planning", "text": "Routes for your dates and budget." },
+      "support": { "title": "Support 24/7", "text": "We stay in touch before, during and after the trip." },
+      "guides": { "title": "Trusted guides", "text": "Reliable partners and excursions." },
+      "prices": { "title": "Transparent pricing", "text": "No hidden fees or surprises." }
+    }
+  },
+
+  "footer": {
+    "copy": "© {{year}} Lavender Travel KZ — Signature tours • Departures from Kazakhstan",
+    "instagram": "Instagram",
+    "whatsapp": "WhatsApp"
+  }
+}

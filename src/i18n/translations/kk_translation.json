@@ -1,0 +1,112 @@
+{
+  "brand": "Lavender Travel KZ",
+  "nav": { "tours": "Турлар", "why": "Неліктен біз", "contacts": "Байланыс", "whatsapp": "WhatsApp" },
+
+  "hero": {
+    "kicker": "Lavender Travel",
+    "titleTop": "Әдемі саяхатта",
+    "titleBottom": "Lavender Travel-мен",
+    "subtitle": "Авторлық турлар, ойластырылған маршруттар және 24/7 қамқорлық. Аз әбігер — көп әсер.",
+    "ctaPrimary": "Тур таңдау",
+    "ctaSecondary": "Жазу",
+    "imageAlt": "Теңіз бен күннің батуы"
+  },
+
+  "contact": {
+    "kicker": "Байланысу",
+    "title": "Идеалды демалысты бірге таңдайық",
+    "subtitle": "Құрамды, күндерді және тілектерді көрсетіңіз — WhatsApp арқылы нұсқаларды жібереміз.",
+    "links": { "instagram": "Instagram", "whatsappLabel": "Телефон" },
+
+    "form": {
+      "name": { "label": "Аты", "placeholder": "Атыңыз" },
+      "phone": { "label": "Телефон / WhatsApp", "placeholder": "+7 777 777 77 77", "short": "Телефон" },
+      "tour": {
+        "label": "Қайда барғыңыз келеді?",
+        "placeholder": "Түркия, Тайланд, БАӘ...",
+        "short": "Бағыт",
+        "suggestions": [
+          "Түркия",
+          "Тайланд",
+          "БАӘ (Дубай)",
+          "Вьетнам (Фукуок)",
+          "Мысыр (Шарм-эш-Шейх)",
+          "Түркия (Каппадокия)"
+        ]
+      },
+      "departure": {
+        "label": "Ұшу қаласы",
+        "placeholder": "Қаланы таңдаңыз",
+        "options": { "almaty": "Алматы", "astana": "Астана", "other": "Басқа" }
+      },
+      "budget": { "label": "Бюджет (міндетті емес)", "placeholder": "Мыс.: адам басына 600$ дейін", "labelShort": "Бюджет" },
+      "adults": { "label": "Ересектер", "short": "Ересектер" },
+      "children": { "label": "Балалар", "short": "Балалар", "ages": "жасы: {{ages}}" },
+      "childAge": { "label": "{{index}} баланың жасы" },
+      "dates": {
+        "label": "Тұру күндері",
+        "empty": "Тұру кезеңін таңдаңыз",
+        "checkIn": "Кіру",
+        "checkOut": "Шығу",
+        "preset": "+{{n}} түн",
+        "needCheckIn": "Алдымен кіру күнін таңдаңыз",
+        "apply": "Қолдану",
+        "nights_one": "{{count}} түн",
+        "nights_other": "{{count}} түн"
+      },
+      "message": { "label": "Түсініктеме", "placeholder": "Тілек/күндер, демалыс түрі, ерекше сұранымдар" },
+      "submit": "Жіберу",
+      "whatsapp": "WhatsApp",
+      "note": "* Форма WhatsApp-та алдын ала толтырылған хабарламаны ашады."
+    },
+
+    "errors": {
+      "name": "Атыңызды енгізіңіз (кемінде 2 таңба)",
+      "phone": "Дұрыс нөмірді көрсетіңіз: +7 777 777 77 77",
+      "departure": "Ұшу қаласын таңдаңыз",
+      "tour": "Ел/қаланы көрсетіңіз (мысалы: Түркия, БАӘ, Тайланд)",
+      "datesRequired": "Тұру кезеңін таңдаңыз (кіру және шығу)",
+      "datesOrder": "Шығу күні кіру күнінен кейін болуы керек",
+      "adults": "Кемінде 1 ересек",
+      "childrenAges": "Әр баланың жасын көрсетіңіз (0–17)"
+    },
+
+    "wa": {
+      "title": "Lavender Travel сайтынан өтінім",
+      "name": "Аты",
+      "phone": "Телефон",
+      "tour": "Бағыт",
+      "adults": "Ересектер",
+      "children": "Балалар",
+      "childrenAges": "жасы: {{ages}}",
+      "checkIn": "Кіру",
+      "checkOut": "Шығу",
+      "nights": "{{count}} түн",
+      "departure": "Ұшу қаласы",
+      "budget": "Бюджет",
+      "message": "Түсініктеме"
+    }
+  },
+
+  "dest": {
+    "title": "Танымал бағыттар",
+    "cta": "Тур таңдау",
+    "items": { "turkey": "Түркия", "vietnam": "Вьетнам", "thailand": "Тайланд", "uae": "БАӘ", "egypt": "Мысыр" }
+  },
+
+  "why": {
+    "title": "Неге бізді таңдайды",
+    "items": {
+      "individual": { "title": "Жеке тәсіл", "text": "Мерзіміңіз бен бюджетіңізге сай маршруттар." },
+      "support": { "title": "24/7 қолдау", "text": "Сапардың алдынан соңына дейін байланыстамыз." },
+      "guides": { "title": "Тәжірибелі гидтер", "text": "Сенімді серіктестер мен экскурсиялар." },
+      "prices": { "title": "Айқын баға", "text": "Жасырын төлемдер мен тосынсыйлар жоқ." }
+    }
+  },
+
+  "footer": {
+    "copy": "© {{year}} Lavender Travel KZ — Авторлық турлар • Қазақстаннан ұшулар",
+    "instagram": "Instagram",
+    "whatsapp": "WhatsApp"
+  }
+}
