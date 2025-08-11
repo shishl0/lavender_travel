@@ -20,17 +20,7 @@
   --dur-slow: 300ms;
 }
 
-@media (max-width: 640px) {
-  .destinations {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 0.5rem;
-  }
-  .destinations > * {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
-  }
-}
+
 
 /* =========================
    БАЗА

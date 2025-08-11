@@ -1,12 +1,12 @@
-/* REPLACED CONTENT BELOW */
+// REPLACEMENT BEGINS
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 /* ================================
-   Helpers
+   Helpers & Types
    ================================ */
-
 
 type FormState = {
   name: string;
@@ -22,8 +22,6 @@ type FormState = {
   budget: string;
 };
 
-
-
 /** Форматирует номер в +7 777 777 77 77 */
 const formatKzPhone = (raw: string) => {
   let d = raw.replace(/\D/g, "");
@@ -37,15 +35,6 @@ const formatKzPhone = (raw: string) => {
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
 
 type Option = { label: string; value: string | number };
-
-/* Склонение слова «ночь» */
-function declineNights(n: number) {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return "ночь";
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "ночи";
-  return "ночей";
-}
 
 /** Достаём только цифры из телефона */
 const phoneDigits = (masked: string) => masked.replace(/\D/g, "");
@@ -65,6 +54,7 @@ type Errors = Partial<{
   adults: string;
   childrenAges: string;
 }>;
+
 
 /* ================================
    Inputs
@@ -262,19 +252,23 @@ function CustomSelect({
    ================================ */
 
 export default function Contact() {
+  const { t } = useTranslation();
+
+  const tourSuggestions = t("contact.form.tour.suggestions", { returnObjects: true }) as string[];
+
   const [form, setForm] = useState<FormState>({
-  name: "",
-  phone: "",
-  tour: "",
-  message: "",
-  adults: 2,
-  childrenCount: 0,
-  childrenAges: [],
-  checkIn: "",
-  checkOut: "",
-  departure: "Алматы",
-  budget: "",
-});
+    name: "",
+    phone: "",
+    tour: "",
+    message: "",
+    adults: 2,
+    childrenCount: 0,
+    childrenAges: [],
+    checkIn: "",
+    checkOut: "",
+    departure: "Алматы",
+    budget: "",
+  });
 
   const [errors, setErrors] = useState<Errors>({});
 
@@ -353,19 +347,19 @@ export default function Contact() {
   };
 
   // Инкременты состава
-    type CountField = "adults" | "childrenCount";
+  type CountField = "adults" | "childrenCount";
 
-    const updateCount = (field: CountField, delta: 1 | -1) => {
+  const updateCount = (field: CountField, delta: 1 | -1) => {
     setForm((p) => {
-        const min = field === "adults" ? 1 : 0;
-        const max = field === "adults" ? 9 : 6;
-        const value = clamp(p[field] + delta, min, max);
-        return { ...p, [field]: value };
+      const min = field === "adults" ? 1 : 0;
+      const max = field === "adults" ? 9 : 6;
+      const value = clamp(p[field] + delta, min, max);
+      return { ...p, [field]: value };
     });
-    };
+  };
 
-    const inc = (field: CountField) => updateCount(field, 1);
-    const dec = (field: CountField) => updateCount(field, -1);
+  const inc = (field: CountField) => updateCount(field, 1);
+  const dec = (field: CountField) => updateCount(field, -1);
 
   // Дата-диапазон
   const [rangeOpen, setRangeOpen] = useState(false);
@@ -378,43 +372,43 @@ export default function Contact() {
     setForm((p) => ({ ...p, checkOut: d.toISOString().split("T")[0] }));
   };
 
-  // Валидация важных полей
+  // Валидация важных полей (с сообщениями из переводов)
   function validate(): Errors {
     const e: Errors = {};
 
     if (!form.name.trim() || form.name.trim().length < 2) {
-      e.name = "Введите имя (минимум 2 символа)";
+      e.name = t("contact.errors.name");
     }
     if (!isPhoneValid(form.phone)) {
-      e.phone = "Укажите корректный номер в формате +7 777 777 77 77";
+      e.phone = t("contact.errors.phone");
     }
     if (!form.departure || !String(form.departure).trim()) {
-      e.departure = "Выберите город вылета";
+      e.departure = t("contact.errors.departure");
     }
     if (!form.tour.trim() || form.tour.trim().length < 2) {
-        e.tour = "Укажите страну/город (например: Турция, ОАЭ, Таиланд)";
+      e.tour = t("contact.errors.tour");
     }
     if (!form.checkIn || !form.checkOut) {
-      e.dates = "Выберите период проживания (заезд и выезд)";
+      e.dates = t("contact.errors.datesRequired");
     } else {
       const inD = new Date(form.checkIn).getTime();
       const outD = new Date(form.checkOut).getTime();
-      if (!(outD > inD)) e.dates = "Дата выезда должна быть позже даты заезда";
+      if (!(outD > inD)) e.dates = t("contact.errors.datesOrder");
     }
     if (form.adults < 1) {
-      e.adults = "Минимум 1 взрослый";
+      e.adults = t("contact.errors.adults");
     }
     if (form.childrenCount > 0) {
       const ok =
         form.childrenAges.length === form.childrenCount &&
         form.childrenAges.every((a) => Number.isInteger(a) && a >= 0 && a <= 17);
-      if (!ok) e.childrenAges = "Укажите возраст каждого ребёнка (0–17)";
+      if (!ok) e.childrenAges = t("contact.errors.childrenAges");
     }
 
     return e;
   }
 
-  // Отправка заявки
+  // Отправка заявки (сообщение собираем из переводов)
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -426,22 +420,28 @@ export default function Contact() {
       return;
     }
 
+    // Группа: Adults / Children (+ ages)
+    const childrenLine =
+      form.childrenCount > 0
+        ? ` (${t("contact.wa.childrenAges", { ages: form.childrenAges.join(", ") })})`
+        : "";
+
     const group =
-      `Взрослые: ${form.adults}\nДети: ${form.childrenCount}` +
-      (form.childrenCount > 0 ? ` (возраст: ${form.childrenAges.join(", ")})` : "");
+      `${t("contact.wa.adults")}: ${form.adults}\n` +
+      `${t("contact.wa.children")}: ${form.childrenCount}${childrenLine}`;
 
     const dates =
       form.checkIn && form.checkOut
-        ? `\nЗаезд: ${form.checkIn} — Выезд: ${form.checkOut} (${nights} ${declineNights(nights)})`
+        ? `\n${t("contact.wa.checkIn")}: ${form.checkIn} — ${t("contact.wa.checkOut")}: ${form.checkOut} (${t("contact.wa.nights", { count: nights })})`
         : "";
 
     const raw =
-`Заявка с сайта Lavender Travel
-Имя: ${form.name}
-Телефон: ${form.phone}
-Куда: ${form.tour}
+`${t("contact.wa.title")}
+${t("contact.wa.name")}: ${form.name}
+${t("contact.wa.phone")}: ${form.phone}
+${t("contact.wa.tour")}: ${form.tour}
 ${group}${dates}
-Город вылета: ${form.departure}${form.budget ? `\nБюджет: ${form.budget}` : ""}${form.message ? `\nКомментарий: ${form.message}` : ""}`;
+${t("contact.wa.departure")}: ${form.departure}${form.budget ? `\n${t("contact.wa.budget")}: ${form.budget}` : ""}${form.message ? `\n${t("contact.wa.message")}: ${form.message}` : ""}`;
 
     window.open(`https://wa.me/77080086191?text=${encodeURIComponent(raw)}`, "_blank");
   };
@@ -455,57 +455,53 @@ ${group}${dates}
       <div className="container grid md:grid-cols-2 gap-10 items-start">
         {/* Левая колонка — инфо */}
         <div>
-          <div className="kicker">Связаться</div>
+          <div className="kicker">{t("contact.kicker")}</div>
           <h3 className="mt-2 text-3xl font-bold" style={{ color: "var(--navy)" }}>
-            Давайте подберём идеальный отдых
+            {t("contact.title")}
           </h3>
           <p className="mt-4 text-gray-600">
-            Укажите состав, даты и пожелания — пришлём подбор в WhatsApp.
+            {t("contact.subtitle")}
           </p>
 
           <div className="mt-6 text-sm text-gray-700 space-y-1">
             <div>
               📞{" "}
-              <a href="https://wa.me/77080086191" target="_blank" className="underline">
+              <a href="https://wa.me/77080086191" target="_blank" className="underline" rel="noreferrer">
                 +7 708 008 6191
               </a>
             </div>
             <div>
-              📩 Instagram:{" "}
+              📩 {t("contact.links.instagram")}:{" "}
               <a
                 href="https://www.instagram.com/lavender_travel_kz"
                 target="_blank"
                 className="underline"
+                rel="noreferrer"
               >
                 @lavender_travel_kz
               </a>
             </div>
           </div>
 
-          <div className="mt-6 p-4 rounded-2xl ring-1 ring-gray-200 bg-gradient-to-b from-purple-50/40 to-transparent">
-            <div className="text-xs text-gray-500">Горящее предложение</div>
-            <div className="mt-1 font-semibold">
-              Турция — 7 ночей от 350$ — вылет 25.08.2025
-            </div>
-          </div>
+
         </div>
 
         {/* Правая колонка — форма */}
         <form onSubmit={submit} className="card p-6 fade-in">
           {/* Имя */}
-          <label className="text-sm font-medium">Имя</label>
+          <label className="text-sm font-medium">{t("contact.form.name.label")}</label>
           <input
             name="name"
             value={form.name}
             onChange={change}
             className={`mt-1 mb-1 w-full border rounded-xl px-3 py-2 ${errors.name ? "border-red-400 ring-1 ring-red-200" : ""}`}
-            placeholder="Ваше имя"
+            placeholder={t("contact.form.name.placeholder")}
             required
           />
           {errors.name && <p className="mb-3 text-xs text-red-600">{errors.name}</p>}
 
           {/* Телефон */}
-          <label className="text-sm font-medium">Телефон / WhatsApp</label>
+          <label className="text-sm font-medium">{t("contact.form.phone.label")}</label>
           <input
             ref={phoneRef}
             name="phone"
@@ -516,32 +512,30 @@ ${group}${dates}
             onPaste={onPhonePaste}
             inputMode="tel"
             className={`mt-1 mb-1 w-full border rounded-xl px-3 py-2 ${errors.phone ? "border-red-400 ring-1 ring-red-200" : ""}`}
-            placeholder="+7 777 777 77 77"
+            placeholder={t("contact.form.phone.placeholder")}
             required
           />
           {errors.phone && <p className="mb-3 text-xs text-red-600">{errors.phone}</p>}
 
           {/* Куда (обязательно) */}
-          <label className="text-sm font-medium">Куда хотите поехать?</label>
+          <label className="text-sm font-medium">{t("contact.form.tour.label")}</label>
           <input
             name="tour"
             value={form.tour}
-                        onChange={(e) => {
+            onChange={(e) => {
               change(e);
               if (errors.tour) setErrors((p) => ({ ...p, tour: "" }));
             }}
             className={`mt-1 mb-1 w-full border rounded-xl px-3 py-2 ${errors.tour ? "ring-1 ring-red-200 border-red-400" : ""}`}
-            placeholder="Турция, Таиланд, ОАЭ..."
+            placeholder={t("contact.form.tour.placeholder")}
             list="tour-suggestions"
             aria-invalid={!!errors.tour}
           />
+          {/* Подсказки (можно тоже локализовать при желании) */}
           <datalist id="tour-suggestions">
-            <option value="Турция" />
-            <option value="Таиланд" />
-            <option value="ОАЭ (Дубай)" />
-            <option value="Вьетнам (Фукуок)" />
-            <option value="Египет (Шарм-эль-Шейх)" />
-            <option value="Турция (Каппадокия)" />
+            {tourSuggestions.map((s) => (
+              <option key={s} value={s} />
+            ))}
           </datalist>
           {errors.tour && (
             <p className="mb-3 text-xs text-red-600">{errors.tour}</p>
@@ -550,28 +544,28 @@ ${group}${dates}
           {/* Вылет / Бюджет */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-sm font-medium">Город вылета</label>
+              <label className="text-sm font-medium">{t("contact.form.departure.label")}</label>
               <CustomSelect
                 className={`mt-1 ${errors.departure ? "ring-1 ring-red-200" : ""}`}
                 value={form.departure}
                 onChange={(v) => setForm((p) => ({ ...p, departure: String(v) }))}
                 options={[
-                  { label: "Алматы", value: "Алматы" },
-                  { label: "Астана", value: "Астана" },
-                  { label: "Другой", value: "Другой" },
+                  { label: t("contact.form.departure.options.almaty"), value: "Алматы" },
+                  { label: t("contact.form.departure.options.astana"), value: "Астана" },
+                  { label: t("contact.form.departure.options.other"), value: "Другой" },
                 ]}
-                placeholder="Город вылета"
+                placeholder={t("contact.form.departure.placeholder")}
               />
               {errors.departure && <p className="mt-1 text-xs text-red-600">{errors.departure}</p>}
             </div>
             <div>
-              <label className="text-sm font-medium">Бюджет (опционально)</label>
+              <label className="text-sm font-medium">{t("contact.form.budget.label")}</label>
               <input
                 name="budget"
                 value={form.budget}
                 onChange={change}
                 className="mt-1 mb-3 w-full border rounded-xl px-3 py-2"
-                placeholder="Напр.: до 600$ на человека"
+                placeholder={t("contact.form.budget.placeholder")}
               />
             </div>
           </div>
@@ -579,12 +573,13 @@ ${group}${dates}
           {/* Состав */}
           <div className={`mt-2 grid grid-cols-1 md:grid-cols-2 gap-3 ${errors.adults ? "ring-1 ring-red-200 rounded-xl p-2" : ""}`}>
             <div>
-              <label className="text-sm font-medium">Взрослые</label>
+              <label className="text-sm font-medium">{t("contact.form.adults.label")}</label>
               <div className="mt-1 flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => dec("adults")}
                   className="w-9 h-9 rounded-lg border flex items-center justify-center select-none press"
+                  aria-label="-"
                 >
                   −
                 </button>
@@ -599,6 +594,7 @@ ${group}${dates}
                   type="button"
                   onClick={() => inc("adults")}
                   className="w-9 h-9 rounded-lg border flex items-center justify-center select-none press"
+                  aria-label="+"
                 >
                   +
                 </button>
@@ -606,12 +602,13 @@ ${group}${dates}
             </div>
 
             <div>
-              <label className="text-sm font-medium">Дети</label>
+              <label className="text-sm font-medium">{t("contact.form.children.label")}</label>
               <div className="mt-1 flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => dec("childrenCount")}
                   className="w-9 h-9 rounded-lg border flex items-center justify-center select-none press"
+                  aria-label="-"
                 >
                   −
                 </button>
@@ -626,6 +623,7 @@ ${group}${dates}
                   type="button"
                   onClick={() => inc("childrenCount")}
                   className="w-9 h-9 rounded-lg border flex items-center justify-center select-none press"
+                  aria-label="+"
                 >
                   +
                 </button>
@@ -640,7 +638,9 @@ ${group}${dates}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {Array.from({ length: form.childrenCount }).map((_, idx) => (
                   <div key={idx}>
-                    <label className="text-xs text-gray-600">Возраст ребёнка {idx + 1}</label>
+                    <label className="text-xs text-gray-600">
+                      {t("contact.form.childAge.label", { index: idx + 1 })}
+                    </label>
                     <AgeNumberInput
                       value={form.childrenAges[idx] ?? 5}
                       onChange={(val) =>
@@ -660,15 +660,15 @@ ${group}${dates}
 
           {/* Даты проживания */}
           <div className="mt-4">
-            <label className="text-sm font-medium">Даты проживания</label>
+            <label className="text-sm font-medium">{t("contact.form.dates.label")}</label>
             <button
               type="button"
               onClick={() => setRangeOpen((v) => !v)}
               className={`mt-1 w-full border rounded-xl px-3 py-2 text-left hover:shadow-sm transition press ${errors.dates ? "border-red-400 ring-1 ring-red-200" : ""}`}
             >
               {form.checkIn && form.checkOut
-                ? `${form.checkIn} — ${form.checkOut} · ${nights} ${declineNights(nights)}`
-                : "Выберите период проживания"}
+                ? `${form.checkIn} — ${form.checkOut} · ${t("contact.form.dates.nights", { count: nights })}`
+                : t("contact.form.dates.empty")}
             </button>
             {errors.dates && <p className="mt-1 text-xs text-red-600">{errors.dates}</p>}
 
@@ -676,7 +676,7 @@ ${group}${dates}
               <div className="mt-2 p-3 rounded-xl ring-1 ring-gray-200 bg-white fade-in">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <span className="text-xs text-gray-500">Заезд</span>
+                    <span className="text-xs text-gray-500">{t("contact.form.dates.checkIn")}</span>
                     <input
                       type="date"
                       name="checkIn"
@@ -687,7 +687,7 @@ ${group}${dates}
                     />
                   </div>
                   <div>
-                    <span className="text-xs text-gray-500">Выезд</span>
+                    <span className="text-xs text-gray-500">{t("contact.form.dates.checkOut")}</span>
                     <input
                       type="date"
                       name="checkOut"
@@ -710,11 +710,11 @@ ${group}${dates}
                       disabled={!form.checkIn}
                       title={
                         form.checkIn
-                          ? `Выезд = Заезд + ${n} ночей`
-                          : "Сначала выберите дату заезда"
+                          ? `${t("contact.form.dates.checkOut")} = ${t("contact.form.dates.checkIn")} + ${t("contact.form.dates.nights", { count: n })}`
+                          : t("contact.form.dates.needCheckIn")
                       }
                     >
-                      +{n} ночей
+                      {t("contact.form.dates.preset", { n })}
                     </button>
                   ))}
                   <div className="ml-auto">
@@ -724,7 +724,7 @@ ${group}${dates}
                       className="px-3 py-2 rounded-lg border press"
                       disabled={!form.checkIn || !form.checkOut}
                     >
-                      Применить
+                      {t("contact.form.dates.apply")}
                     </button>
                   </div>
                 </div>
@@ -733,26 +733,26 @@ ${group}${dates}
           </div>
 
           {/* Комментарий */}
-          <label className="mt-4 text-sm font-medium">Комментарий</label>
+          <label className="mt-4 text-sm font-medium">{t("contact.form.message.label")}</label>
           <textarea
             name="message"
             value={form.message}
             onChange={change}
             className="mt-1 w-full border rounded-xl px-3 py-2 h-28"
-            placeholder="Пожелания/даты, тип отдыха, особые запросы"
+            placeholder={t("contact.form.message.placeholder")}
           />
 
           <div className="mt-4 flex gap-3">
             <button type="submit" className="btn-primary press">
-              Отправить
+              {t("contact.form.submit")}
             </button>
-            <a href="https://wa.me/77080086191" target="_blank" className="btn-ghost press">
-              WhatsApp
+            <a href="https://wa.me/77080086191" target="_blank" className="btn-ghost press" rel="noreferrer">
+              {t("contact.form.whatsapp")}
             </a>
           </div>
 
           <p className="mt-3 text-xs text-gray-500">
-            * Форма откроет WhatsApp с заполненным сообщением.
+            {t("contact.form.note")}
           </p>
         </form>
       </div>
