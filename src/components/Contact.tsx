@@ -1,12 +1,17 @@
-// REPLACEMENT BEGINS
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { track } from "@/lib/track";
+import type { SiteSettingsDTO } from "@/types/cms";
 
 /* ================================
-   Helpers & Types
-   ================================ */
+   Types
+================================ */
+
+type Props = {
+  settings: SiteSettingsDTO | null;
+};
 
 type FormState = {
   name: string;
@@ -22,29 +27,6 @@ type FormState = {
   budget: string;
 };
 
-/** Форматирует номер в +7 777 777 77 77 */
-const formatKzPhone = (raw: string) => {
-  let d = raw.replace(/\D/g, "");
-  if (d.startsWith("8")) d = "7" + d.slice(1);
-  if (!d.startsWith("7")) d = "7" + d;
-  const r = d.slice(1);
-  const g1 = r.slice(0, 3), g2 = r.slice(3, 6), g3 = r.slice(6, 8), g4 = r.slice(8, 10);
-  return ["+7", g1 && " " + g1, g2 && " " + g2, g3 && " " + g3, g4 && " " + g4].join("");
-};
-
-const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
-
-type Option = { label: string; value: string | number };
-
-/** Достаём только цифры из телефона */
-const phoneDigits = (masked: string) => masked.replace(/\D/g, "");
-
-/** Телефон валиден, если 11 цифр и начинается на 7 */
-const isPhoneValid = (masked: string) => {
-  const d = phoneDigits(masked);
-  return d.length === 11 && d.startsWith("7");
-};
-
 type Errors = Partial<{
   name: string;
   phone: string;
@@ -55,12 +37,45 @@ type Errors = Partial<{
   childrenAges: string;
 }>;
 
+type Option = { label: string; value: string | number };
+
+/* ================================
+   Utils
+================================ */
+
+const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
+const phoneDigits = (masked: string) => masked.replace(/\D/g, "");
+const isPhoneValid = (masked: string) => {
+  const d = phoneDigits(masked);
+  return d.length === 11 && d.startsWith("7");
+};
+/** Показ в UI: +7 708 008 61 91 */
+const formatKzPhone = (raw: string) => {
+  let d = raw.replace(/\D/g, "");
+  if (d.startsWith("8")) d = "7" + d.slice(1);
+  if (!d.startsWith("7")) d = "7" + d;
+  const r = d.slice(1);
+  const g1 = r.slice(0, 3),
+    g2 = r.slice(3, 6),
+    g3 = r.slice(6, 8),
+    g4 = r.slice(8, 10);
+  return ["+7", g1 && " " + g1, g2 && " " + g2, g3 && " " + g3, g4 && " " + g4]
+    .filter(Boolean)
+    .join("");
+};
+/** Для wa.me: только цифры */
+const waNumberToDigits = (whats?: string | null): string | null => {
+  if (!whats) return null;
+  let d = whats.replace(/\D/g, "");
+  if (d.startsWith("8")) d = "7" + d.slice(1);
+  if (!d.startsWith("7")) d = "7" + d;
+  return d.length === 11 ? d : null;
+};
 
 /* ================================
    Inputs
-   ================================ */
+================================ */
 
-/** Number input (0–17) с кастомными стрелками */
 function AgeNumberInput({
   value,
   onChange,
@@ -70,7 +85,6 @@ function AgeNumberInput({
 }) {
   const inc = () => onChange(Math.min(17, (value ?? 0) + 1));
   const dec = () => onChange(Math.max(0, (value ?? 0) - 1));
-
   return (
     <div className="age-wrap">
       <input
@@ -85,23 +99,12 @@ function AgeNumberInput({
         }}
         aria-label="Возраст ребёнка"
       />
-      <button
-        type="button"
-        className="age-step age-up press"
-        onClick={inc}
-        aria-label="Увеличить возраст"
-      />
-      <button
-        type="button"
-        className="age-step age-down press"
-        onClick={dec}
-        aria-label="Уменьшить возраст"
-      />
+      <button type="button" className="age-step age-up press" onClick={inc} aria-label="Увеличить возраст" />
+      <button type="button" className="age-step age-down press" onClick={dec} aria-label="Уменьшить возраст" />
     </div>
   );
 }
 
-/** Лёгкий кастомный select (клавиатура, клик-вне, Esc) */
 function CustomSelect({
   value,
   onChange,
@@ -124,7 +127,6 @@ function CustomSelect({
   });
   const ref = useRef<HTMLDivElement | null>(null);
 
-  // Закрытие по клику вне и по Esc
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
       if (!ref.current?.contains(e.target as Node)) setOpen(false);
@@ -138,7 +140,6 @@ function CustomSelect({
     };
   }, []);
 
-  // Синхронизация активного элемента при внешнем изменении value
   useEffect(() => {
     const idx = options.findIndex((o) => o.value === value);
     if (idx >= 0) setActive(idx);
@@ -195,14 +196,7 @@ function CustomSelect({
           {sel ? sel.label : placeholder}
         </span>
         <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-          <polyline
-            points="6 9 12 15 18 9"
-            fill="none"
-            stroke="#5B5F71"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          <polyline points="6 9 12 15 18 9" fill="none" stroke="#5B5F71" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
 
@@ -228,14 +222,7 @@ function CustomSelect({
                 <span>{o.label}</span>
                 {isSelected && (
                   <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-                    <path
-                      d="M20 6L9 17l-5-5"
-                      fill="none"
-                      stroke="#7B4DBB"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
+                    <path d="M20 6L9 17l-5-5" fill="none" stroke="#7B4DBB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 )}
               </li>
@@ -248,11 +235,11 @@ function CustomSelect({
 }
 
 /* ================================
-   Contact
-   ================================ */
+   Component
+================================ */
 
-export default function Contact() {
-  const { t } = useTranslation();
+export default function Contact({ settings }: Props) {
+  const { t, i18n } = useTranslation();
 
   const tourSuggestions = t("contact.form.tour.suggestions", { returnObjects: true }) as string[];
 
@@ -272,7 +259,35 @@ export default function Contact() {
 
   const [errors, setErrors] = useState<Errors>({});
 
-  // Синхронизация массива возрастов при изменении количества детей
+  // Дефолты для контактов
+  const DEFAULT_WA_DIGITS = "77080086191";
+  const DEFAULT_WA_DISPLAY = "+7 708 008 6191";
+  const DEFAULT_IG = "https://www.instagram.com/lavender_travel_kz";
+
+  // Ссылки/отображение из настроек:
+  const waDigits = useMemo(
+    () => waNumberToDigits(settings?.whatsappNumber) ?? DEFAULT_WA_DIGITS,
+    [settings?.whatsappNumber]
+  );
+  const waHref = `https://wa.me/${waDigits}`;
+
+  const displayPhone = useMemo(
+    () => (settings?.whatsappNumber ? formatKzPhone(settings.whatsappNumber) : DEFAULT_WA_DISPLAY),
+    [settings?.whatsappNumber]
+  );
+
+  const instagramHref = settings?.instagramUrl || DEFAULT_IG;
+  const instagramHandle = useMemo(() => {
+    try {
+      const u = new URL(instagramHref);
+      const h = u.pathname.replace(/\//g, "");
+      return h || "lavender_travel_kz";
+    } catch {
+      return "lavender_travel_kz";
+    }
+  }, [instagramHref]);
+
+  // Синхронизация массива возрастов
   useEffect(() => {
     setForm((prev) => {
       const next = { ...prev };
@@ -331,7 +346,7 @@ export default function Contact() {
     setForm((p) => ({ ...p, [name]: value }));
   };
 
-  // Телефон: автоформат на фокус/вставку
+  // Телефон: автоформат
   const phoneRef = useRef<HTMLInputElement | null>(null);
   const onPhoneFocus = () => {
     setForm((p) => ({ ...p, phone: p.phone ? formatKzPhone(p.phone) : "+7 " }));
@@ -348,7 +363,6 @@ export default function Contact() {
 
   // Инкременты состава
   type CountField = "adults" | "childrenCount";
-
   const updateCount = (field: CountField, delta: 1 | -1) => {
     setForm((p) => {
       const min = field === "adults" ? 1 : 0;
@@ -357,7 +371,6 @@ export default function Contact() {
       return { ...p, [field]: value };
     });
   };
-
   const inc = (field: CountField) => updateCount(field, 1);
   const dec = (field: CountField) => updateCount(field, -1);
 
@@ -372,22 +385,13 @@ export default function Contact() {
     setForm((p) => ({ ...p, checkOut: d.toISOString().split("T")[0] }));
   };
 
-  // Валидация важных полей (с сообщениями из переводов)
+  // Валидация
   function validate(): Errors {
     const e: Errors = {};
-
-    if (!form.name.trim() || form.name.trim().length < 2) {
-      e.name = t("contact.errors.name");
-    }
-    if (!isPhoneValid(form.phone)) {
-      e.phone = t("contact.errors.phone");
-    }
-    if (!form.departure || !String(form.departure).trim()) {
-      e.departure = t("contact.errors.departure");
-    }
-    if (!form.tour.trim() || form.tour.trim().length < 2) {
-      e.tour = t("contact.errors.tour");
-    }
+    if (!form.name.trim() || form.name.trim().length < 2) e.name = t("contact.errors.name");
+    if (!isPhoneValid(form.phone)) e.phone = t("contact.errors.phone");
+    if (!form.departure || !String(form.departure).trim()) e.departure = t("contact.errors.departure");
+    if (!form.tour.trim() || form.tour.trim().length < 2) e.tour = t("contact.errors.tour");
     if (!form.checkIn || !form.checkOut) {
       e.dates = t("contact.errors.datesRequired");
     } else {
@@ -395,32 +399,27 @@ export default function Contact() {
       const outD = new Date(form.checkOut).getTime();
       if (!(outD > inD)) e.dates = t("contact.errors.datesOrder");
     }
-    if (form.adults < 1) {
-      e.adults = t("contact.errors.adults");
-    }
+    if (form.adults < 1) e.adults = t("contact.errors.adults");
     if (form.childrenCount > 0) {
       const ok =
         form.childrenAges.length === form.childrenCount &&
         form.childrenAges.every((a) => Number.isInteger(a) && a >= 0 && a <= 17);
       if (!ok) e.childrenAges = t("contact.errors.childrenAges");
     }
-
     return e;
   }
 
-  // Отправка заявки (сообщение собираем из переводов)
+  // Отправка
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
 
     const v = validate();
     setErrors(v);
-
     if (Object.keys(v).length > 0) {
       if (v.dates) setRangeOpen(true);
       return;
     }
 
-    // Группа: Adults / Children (+ ages)
     const childrenLine =
       form.childrenCount > 0
         ? ` (${t("contact.wa.childrenAges", { ages: form.childrenAges.join(", ") })})`
@@ -443,12 +442,22 @@ ${t("contact.wa.tour")}: ${form.tour}
 ${group}${dates}
 ${t("contact.wa.departure")}: ${form.departure}${form.budget ? `\n${t("contact.wa.budget")}: ${form.budget}` : ""}${form.message ? `\n${t("contact.wa.message")}: ${form.message}` : ""}`;
 
-    window.open(`https://wa.me/77080086191?text=${encodeURIComponent(raw)}`, "_blank");
+    // Событие заявки — отправляем ДО перехода в WhatsApp
+    track("submit_form", {
+      locale: i18n.language,
+      adults: form.adults,
+      childrenCount: form.childrenCount,
+      nights,
+      departure: form.departure,
+      destinationFilled: !!form.tour?.trim(),
+    });
+
+    window.open(`${waHref}?text=${encodeURIComponent(raw)}`, "_blank");
   };
 
   /* ================================
      Render
-     ================================ */
+  ================================ */
 
   return (
     <section id="contact" className="section">
@@ -459,31 +468,28 @@ ${t("contact.wa.departure")}: ${form.departure}${form.budget ? `\n${t("contact.w
           <h3 className="mt-2 text-3xl font-bold" style={{ color: "var(--navy)" }}>
             {t("contact.title")}
           </h3>
-          <p className="mt-4 text-gray-600">
-            {t("contact.subtitle")}
-          </p>
+          <p className="mt-4 text-gray-600">{t("contact.subtitle")}</p>
 
           <div className="mt-6 text-sm text-gray-700 space-y-1">
             <div>
               📞{" "}
-              <a href="https://wa.me/77080086191" target="_blank" className="underline" rel="noreferrer">
-                +7 708 008 6191
+              <a
+                href={waHref}
+                target="_blank"
+                className="underline"
+                rel="noreferrer"
+                onClick={() => track("click_whatsapp", { place: "contact_info" })}
+              >
+                {displayPhone}
               </a>
             </div>
             <div>
               📩 {t("contact.links.instagram")}:{" "}
-              <a
-                href="https://www.instagram.com/lavender_travel_kz"
-                target="_blank"
-                className="underline"
-                rel="noreferrer"
-              >
-                @lavender_travel_kz
+              <a href={instagramHref} target="_blank" className="underline" rel="noreferrer">
+                @{instagramHandle}
               </a>
             </div>
           </div>
-
-
         </div>
 
         {/* Правая колонка — форма */}
@@ -493,7 +499,7 @@ ${t("contact.wa.departure")}: ${form.departure}${form.budget ? `\n${t("contact.w
           <input
             name="name"
             value={form.name}
-            onChange={change}
+            onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
             className={`mt-1 mb-1 w-full border rounded-xl px-3 py-2 ${errors.name ? "border-red-400 ring-1 ring-red-200" : ""}`}
             placeholder={t("contact.form.name.placeholder")}
             required
@@ -517,7 +523,7 @@ ${t("contact.wa.departure")}: ${form.departure}${form.budget ? `\n${t("contact.w
           />
           {errors.phone && <p className="mb-3 text-xs text-red-600">{errors.phone}</p>}
 
-          {/* Куда (обязательно) */}
+          {/* Куда */}
           <label className="text-sm font-medium">{t("contact.form.tour.label")}</label>
           <input
             name="tour"
@@ -531,15 +537,12 @@ ${t("contact.wa.departure")}: ${form.departure}${form.budget ? `\n${t("contact.w
             list="tour-suggestions"
             aria-invalid={!!errors.tour}
           />
-          {/* Подсказки (можно тоже локализовать при желании) */}
           <datalist id="tour-suggestions">
             {tourSuggestions.map((s) => (
               <option key={s} value={s} />
             ))}
           </datalist>
-          {errors.tour && (
-            <p className="mb-3 text-xs text-red-600">{errors.tour}</p>
-          )}
+          {errors.tour && <p className="mb-3 text-xs text-red-600">{errors.tour}</p>}
 
           {/* Вылет / Бюджет */}
           <div className="grid grid-cols-2 gap-3">
@@ -575,58 +578,18 @@ ${t("contact.wa.departure")}: ${form.departure}${form.budget ? `\n${t("contact.w
             <div>
               <label className="text-sm font-medium">{t("contact.form.adults.label")}</label>
               <div className="mt-1 flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => dec("adults")}
-                  className="w-9 h-9 rounded-lg border flex items-center justify-center select-none press"
-                  aria-label="-"
-                >
-                  −
-                </button>
-                <input
-                  name="adults"
-                  value={form.adults}
-                  onChange={change}
-                  inputMode="numeric"
-                  className="w-16 text-center border rounded-lg py-2"
-                />
-                <button
-                  type="button"
-                  onClick={() => inc("adults")}
-                  className="w-9 h-9 rounded-lg border flex items-center justify-center select-none press"
-                  aria-label="+"
-                >
-                  +
-                </button>
+                <button type="button" onClick={() => dec("adults")} className="w-9 h-9 rounded-lg border flex items-center justify-center select-none press" aria-label="−">−</button>
+                <input name="adults" value={form.adults} onChange={change} inputMode="numeric" className="w-16 text-center border rounded-lg py-2" />
+                <button type="button" onClick={() => inc("adults")} className="w-9 h-9 rounded-lg border flex items-center justify-center select-none press" aria-label="+">+</button>
               </div>
             </div>
 
             <div>
               <label className="text-sm font-medium">{t("contact.form.children.label")}</label>
               <div className="mt-1 flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => dec("childrenCount")}
-                  className="w-9 h-9 rounded-lg border flex items-center justify-center select-none press"
-                  aria-label="-"
-                >
-                  −
-                </button>
-                <input
-                  name="childrenCount"
-                  value={form.childrenCount}
-                  onChange={change}
-                  inputMode="numeric"
-                  className="w-16 text-center border rounded-lg py-2"
-                />
-                <button
-                  type="button"
-                  onClick={() => inc("childrenCount")}
-                  className="w-9 h-9 rounded-lg border flex items-center justify-center select-none press"
-                  aria-label="+"
-                >
-                  +
-                </button>
+                <button type="button" onClick={() => dec("childrenCount")} className="w-9 h-9 rounded-lg border flex items-center justify-center select-none press" aria-label="−">−</button>
+                <input name="childrenCount" value={form.childrenCount} onChange={change} inputMode="numeric" className="w-16 text-center border rounded-lg py-2" />
+                <button type="button" onClick={() => inc("childrenCount")} className="w-9 h-9 rounded-lg border flex items-center justify-center select-none press" aria-label="+">+</button>
               </div>
             </div>
           </div>
@@ -638,9 +601,7 @@ ${t("contact.wa.departure")}: ${form.departure}${form.budget ? `\n${t("contact.w
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {Array.from({ length: form.childrenCount }).map((_, idx) => (
                   <div key={idx}>
-                    <label className="text-xs text-gray-600">
-                      {t("contact.form.childAge.label", { index: idx + 1 })}
-                    </label>
+                    <label className="text-xs text-gray-600">{t("contact.form.childAge.label", { index: idx + 1 })}</label>
                     <AgeNumberInput
                       value={form.childrenAges[idx] ?? 5}
                       onChange={(val) =>
@@ -677,29 +638,14 @@ ${t("contact.wa.departure")}: ${form.departure}${form.budget ? `\n${t("contact.w
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
                     <span className="text-xs text-gray-500">{t("contact.form.dates.checkIn")}</span>
-                    <input
-                      type="date"
-                      name="checkIn"
-                      min={isoToday}
-                      value={form.checkIn}
-                      onChange={change}
-                      className="mt-1 w-full border rounded-xl px-3 py-2 bg-white"
-                    />
+                    <input type="date" name="checkIn" min={isoToday} value={form.checkIn} onChange={change} className="mt-1 w-full border rounded-xl px-3 py-2 bg-white" />
                   </div>
                   <div>
                     <span className="text-xs text-gray-500">{t("contact.form.dates.checkOut")}</span>
-                    <input
-                      type="date"
-                      name="checkOut"
-                      min={form.checkIn || isoToday}
-                      value={form.checkOut}
-                      onChange={change}
-                      className="mt-1 w-full border rounded-xl px-3 py-2 bg-white"
-                    />
+                    <input type="date" name="checkOut" min={form.checkIn || isoToday} value={form.checkOut} onChange={change} className="mt-1 w-full border rounded-xl px-3 py-2 bg-white" />
                   </div>
                 </div>
 
-                {/* Быстрые пресеты */}
                 <div className="mt-3 flex flex-wrap gap-2 text-sm">
                   {[7, 10, 14].map((n) => (
                     <button
@@ -718,12 +664,7 @@ ${t("contact.wa.departure")}: ${form.departure}${form.budget ? `\n${t("contact.w
                     </button>
                   ))}
                   <div className="ml-auto">
-                    <button
-                      type="button"
-                      onClick={() => setRangeOpen(false)}
-                      className="px-3 py-2 rounded-lg border press"
-                      disabled={!form.checkIn || !form.checkOut}
-                    >
+                    <button type="button" onClick={() => setRangeOpen(false)} className="px-3 py-2 rounded-lg border press" disabled={!form.checkIn || !form.checkOut}>
                       {t("contact.form.dates.apply")}
                     </button>
                   </div>
@@ -743,17 +684,19 @@ ${t("contact.wa.departure")}: ${form.departure}${form.budget ? `\n${t("contact.w
           />
 
           <div className="mt-4 flex gap-3">
-            <button type="submit" className="btn-primary press">
-              {t("contact.form.submit")}
-            </button>
-            <a href="https://wa.me/77080086191" target="_blank" className="btn-ghost press" rel="noreferrer">
+            <button type="submit" className="btn-primary press">{t("contact.form.submit")}</button>
+            <a
+              href={waHref}
+              target="_blank"
+              className="btn-ghost press"
+              rel="noreferrer"
+              onClick={() => track("click_whatsapp", { place: "contact_button" })}
+            >
               {t("contact.form.whatsapp")}
             </a>
           </div>
 
-          <p className="mt-3 text-xs text-gray-500">
-            {t("contact.form.note")}
-          </p>
+          <p className="mt-3 text-xs text-gray-500">{t("contact.form.note")}</p>
         </form>
       </div>
     </section>

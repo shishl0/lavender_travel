@@ -1,4 +1,3 @@
-// src/i18n/i18n.ts
 import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
@@ -11,7 +10,7 @@ const resources = {
   en: { translation: en },
   ru: { translation: ru },
   kk: { translation: kk },
-} as const; // <— ВАЖНО
+} as const;
 
 if (!i18n.isInitialized) {
   i18n

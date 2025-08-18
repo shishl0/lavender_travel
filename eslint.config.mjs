@@ -1,16 +1,24 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import next from "eslint-config-next";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+export default [
+  ...next,
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
 
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" }
+      ],
+
+      "@next/next/no-img-element": "warn",
+
+      "prefer-const": "warn",
+    },
+  },
+
+  {
+    ignores: ["**/.next/**", "**/node_modules/**", "public/cms-snapshot.json"],
+  },
 ];
-
-export default eslintConfig;

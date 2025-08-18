@@ -1,3 +1,5 @@
+import { getActiveSettings, getActiveHero, getActiveDestinations } from '@/lib/cms-cache';
+import { waNumberToE164 } from '@/lib/phone';
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Destinations from "@/components/Destinations";
@@ -7,19 +9,28 @@ import Footer from "@/components/Footer";
 import WhatsAppFab from "@/components/WhatsAppFab";
 import SmoothScroll from "@/components/SmoothScroll";
 
-export default function Page() {
+export default async function Page() {
+  // всё — из кеша (unstable_cache)
+  const [settings, hero, dests] = await Promise.all([
+    getActiveSettings(),
+    getActiveHero(),
+    getActiveDestinations(),
+  ]);
+
+  const waDigits = waNumberToE164(settings?.whatsappNumber) ?? "77080086191";
+
   return (
     <>
-      <SmoothScroll></SmoothScroll>
-      <Header />
+      <SmoothScroll />
+      <Header settings={settings ?? null} />
       <main>
-        <Hero />
-        <Destinations />
+        <Hero cms={hero ?? null} waDigits={waDigits} />
+        <Destinations cms={dests ?? []} />
         <WhyUs />
-        <Contact />
+        <Contact settings={settings ?? null} />
       </main>
-      <Footer />
-      <WhatsAppFab />
+      <Footer settings={settings ?? null} />
+      <WhatsAppFab phone={waDigits} />
     </>
   );
 }

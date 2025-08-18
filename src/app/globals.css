@@ -18,9 +18,12 @@
   --dur-fast: 160ms;
   --dur-med: 200ms;
   --dur-slow: 300ms;
+
+  /* Тени/кольца */
+  --ring: 0 0 0 4px rgba(123,77,187,0.12);
+  --shadow-sm: 0 1px 2px rgba(17,24,39,.06);
+  --shadow-lg: 0 10px 30px rgba(17,24,39,.08);
 }
-
-
 
 /* =========================
    БАЗА
@@ -29,8 +32,14 @@ html, body { height: 100%; }
 body{
   background: var(--bg);
   color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   font-feature-settings: "liga" 1, "kern" 1;
   scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+::selection{
+  background: rgba(123,77,187,.14);
 }
 
 /* =========================
@@ -46,17 +55,30 @@ body{
   background: var(--brand);
   color: #111827;
   @apply rounded-xl font-semibold px-5 py-3;
-  transition: filter var(--dur-med) var(--ease-out);
+  transition: filter var(--dur-med) var(--ease-out), transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-med);
+  box-shadow: var(--shadow-sm);
 }
-.btn-primary:hover{ filter: brightness(1.05); }
+.btn-primary:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+.btn-primary:active{ transform: translateY(0); filter: brightness(0.98); }
+.btn-primary:focus-visible{ outline: none; box-shadow: var(--shadow-sm), var(--ring); }
+.btn-primary:disabled{
+  filter: none; transform: none;
+  opacity: .6; cursor: not-allowed;
+}
 
 .btn-ghost{
   @apply rounded-xl font-semibold px-5 py-3 border;
   border-color: var(--lavender);
   color: var(--navy);
-  transition: background var(--dur-med) var(--ease-out), color var(--dur-med) var(--ease-out), border-color var(--dur-med) var(--ease-out);
+  transition: background var(--dur-med) var(--ease-out), color var(--dur-med) var(--ease-out), border-color var(--dur-med) var(--ease-out), transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-med);
+  box-shadow: var(--shadow-sm);
 }
-.btn-ghost:hover{ background: var(--tint); }
+.btn-ghost:hover{ background: var(--tint); transform: translateY(-1px); }
+.btn-ghost:active{ transform: translateY(0); }
+.btn-ghost:focus-visible{ outline: none; box-shadow: var(--shadow-sm), var(--ring); }
+.btn-ghost:disabled{
+  opacity: .6; cursor: not-allowed; transform: none; background: #fafafa;
+}
 
 /* Единая «пружинка» нажатия */
 .press{
@@ -74,8 +96,12 @@ body{
 /* =========================
    КАРТОЧКИ / МЕЛОЧИ
    ========================= */
-.card{ @apply bg-white rounded-2xl shadow-sm ring-1 ring-gray-100; transition: transform var(--dur-slow) var(--ease-out), box-shadow var(--dur-med); }
-.card:hover{ transform: translateY(-2px); @apply hover:shadow-lg; }
+.card{
+  @apply bg-white rounded-2xl ring-1 ring-gray-100;
+  transition: transform var(--dur-slow) var(--ease-out), box-shadow var(--dur-med);
+  box-shadow: var(--shadow-sm);
+}
+.card:hover{ transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 
 .kicker{ @apply text-xs tracking-widest uppercase font-semibold; color: var(--lavender); }
 
@@ -90,6 +116,7 @@ body{
 }
 .fab:hover{ transform: translateY(-1px); }
 .fab:active{ transform: translateY(1px) scale(.98); }
+.fab:focus-visible{ outline: none; box-shadow: 0 10px 24px rgba(123,77,187,.35), var(--ring); }
 
 /* Мягкая дымка в hero */
 .hero-haze{
@@ -114,11 +141,16 @@ body{
   @apply w-full border px-4 bg-white;
   display: flex; align-items: center; justify-content: space-between;
   transition: box-shadow var(--dur-med), border-color var(--dur-med), background var(--dur-med);
+  height: 42px; border-radius: 12px;
 }
 .select-trigger:focus{
   outline: none;
-  box-shadow: 0 0 0 4px rgba(123,77,187,0.12);
+  box-shadow: var(--ring);
   border-color: rgba(123,77,187,0.5);
+}
+.select-trigger:disabled{
+  background: #fafafa; color: var(--muted);
+  cursor: not-allowed;
 }
 
 /* Дропдаун */
@@ -126,18 +158,22 @@ body{
   position: absolute; left: 0; right: 0; z-index: 50;
   margin-top: .5rem;
   border-radius: 1rem; background: #fff;
-  box-shadow: 0 10px 30px rgba(17,24,39,.08);
+  box-shadow: var(--shadow-lg);
   border: 1px solid rgba(17,24,39,.08);
   overflow: hidden;
   animation: fadeScale var(--dur-fast) var(--ease-out) both;
+  max-height: 18rem; overflow-y: auto;
 }
 .select-dropdown li{
-  padding: .5rem .75rem; font-size: .95rem;
+  padding: .6rem .8rem; font-size: .95rem;
   display: flex; align-items: center; justify-content: space-between;
   cursor: pointer;
   transition: background-color var(--dur-fast), color var(--dur-fast);
 }
 .select-dropdown li:hover{ background: var(--tint); }
+.select-dropdown li[aria-selected="true"]{
+  background: rgba(123,77,187,.06);
+}
 
 @keyframes fadeScale{
   from{ opacity: 0; transform: translateY(-4px) scale(.98); }
@@ -174,11 +210,12 @@ body{
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 1px 0 rgba(17,24,39,.04);
   cursor: pointer; user-select: none;
-  transition: transform var(--dur-fast) var(--ease-out);
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-med);
 }
 .age-up{ top: 7px; }
 .age-down{ bottom: 7px; }
 .age-step:active{ transform: translateY(1px) scale(.98); }
+.age-step:focus-visible{ outline: none; box-shadow: var(--ring); }
 
 /* Иконки стрелок */
 .age-step::before{
@@ -188,3 +225,57 @@ body{
   background-repeat: no-repeat; background-position: center;
 }
 .age-down::before{ transform: rotate(180deg); }
+
+/* ===== Admin UI field skin ===== */
+@layer components {
+  /* стрелка для select как CSS-переменная */
+  .admin-ui {
+    --admin-chevron: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2374818B'>\
+<path fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z' clip-rule='evenodd'/>\
+</svg>");
+  }
+
+  /* Базовый стиль для всех стандартных полей в админке */
+  .admin-ui :is(
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="url"],
+    input[type="search"],
+    input[type="tel"],
+    input[type="number"],
+    input:not([type]),
+    textarea,
+    select
+  ) {
+    @apply h-10 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 shadow-sm
+           text-[14px] outline-none transition
+           placeholder:text-gray-400;
+  }
+
+  /* hover/focus состояния */
+  .admin-ui :is(input, textarea, select):hover { @apply border-gray-300; }
+  .admin-ui :is(input, textarea, select):focus { @apply border-[#cbb6ff] ring-4 ring-[#5e3bb7]/10; }
+
+  /* textarea повыше по умолчанию */
+  .admin-ui textarea { @apply h-24 leading-relaxed; }
+
+  /* красивый select с собственной стрелкой */
+  .admin-ui select {
+    appearance: none;
+    background-image: var(--admin-chevron);
+    background-repeat: no-repeat;
+    background-size: 16px 16px;
+    background-position: right .65rem center;
+    padding-right: 2.25rem; /* запас под стрелку */
+  }
+
+  /* disabled */
+  .admin-ui :is(input, textarea, select):disabled {
+    @apply bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed shadow-none;
+  }
+
+  /* компактные поля (если где-то надо): class="afield-sm" */
+  .admin-ui .afield-sm { @apply h-9 text-[13px]; }
+}

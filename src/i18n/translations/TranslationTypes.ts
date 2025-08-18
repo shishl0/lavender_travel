@@ -1,4 +1,3 @@
-// i18n/translations/TranslationTypes.ts
 export interface TranslationTypes {
   brand: string;
   nav: {
