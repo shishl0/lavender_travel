@@ -3,25 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { withAudit } from "@/lib/audit";
+import { formatDateTime } from "@/lib/tz";
 import type { Role } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
 function mapUser(u: any) {
-  const fmt = (d?: Date | null) =>
-    d
-      ? new Intl.DateTimeFormat("ru-RU", {
-          timeZone: "Asia/Almaty",
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: false,
-        }).format(d)
-      : null;
-
   return {
     id: u.id,
     email: u.email,
@@ -29,9 +16,9 @@ function mapUser(u: any) {
     role: u.role,
     image: u.image ?? null,
     createdAtISO: u.createdAt.toISOString(),
-    createdAtDisplay: fmt(u.createdAt) ?? "",
+    createdAtDisplay: formatDateTime(u.createdAt) ?? "",
     lastLoginAtISO: u.lastLoginAt ? u.lastLoginAt.toISOString() : null,
-    lastLoginAtDisplay: u.lastLoginAt ? fmt(u.lastLoginAt) : null,
+    lastLoginAtDisplay: u.lastLoginAt ? formatDateTime(u.lastLoginAt) : null,
   };
 }
 

@@ -1,21 +1,12 @@
 import { requireRole } from "@/lib/require-auth";
 import { prisma } from "@/lib/prisma";
+import { formatDateTime } from "@/lib/tz";
 import AdminsManager from "./ui/AdminsManager";
 
 export const dynamic = "force-dynamic";
 
 function fmtKZ(d: Date | null | undefined) {
-  if (!d) return null;
-  return new Intl.DateTimeFormat("ru-RU", {
-    timeZone: "Asia/Almaty",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  }).format(d);
+  return d ? formatDateTime(d) : null;
 }
 
 export default async function AdminsPage() {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withAudit } from "@/lib/audit";
 import { requireRole } from "@/lib/require-auth";
+import { APP_TZ, ymdInTZ } from "@/lib/tz";
 
 type Bucket = {
   dayISO: string;
@@ -11,7 +12,7 @@ type Bucket = {
   count: number;
 };
 
-async function _POST(req: Request) {
+async function _POST(_req: Request) {
   await requireRole(["ADMIN"]);
 
   try {
@@ -30,18 +31,15 @@ async function _POST(req: Request) {
     const buckets = new Map<string, Bucket>();
 
     for (const r of rows) {
-      const day = new Date(r.createdAt);
-      day.setHours(0, 0, 0, 0);
-
+      const dayISO = ymdInTZ(r.createdAt, APP_TZ); // "YYYY-MM-DD"
       const pathSafe = r.path ?? "";
       const localeSafe = r.locale ?? "";
-
-      const key = [day.toISOString(), r.type, pathSafe, localeSafe].join("|");
+      const key = [dayISO, r.type, pathSafe, localeSafe].join("|");
 
       const cur =
         buckets.get(key) ??
         ({
-          dayISO: day.toISOString(),
+          dayISO,
           type: r.type,
           path: pathSafe,
           locale: localeSafe,

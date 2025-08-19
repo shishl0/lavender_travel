@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { formatDateTime } from "@/lib/tz";
 import Select from "../../../ui/Select";
 
 type AdminRow = {
@@ -18,21 +19,7 @@ type AdminRow = {
 };
 
 function fmtKZ(iso?: string | null) {
-  if (!iso) return null;
-  try {
-    return new Intl.DateTimeFormat("ru-RU", {
-      timeZone: "Asia/Almaty",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
+  return iso ? formatDateTime(iso) : null;
 }
 
 export default function AdminsManager({

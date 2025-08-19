@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { track } from "@/lib/track";
 import type { SiteSettingsDTO } from "@/types/cms";
+import ReviewsCarousel from "@/components/reviews/ReviewsCarousel";
+import ReviewPublicForm from "@/components/reviews/ReviewPublicForm";
 
 /* ================================
    Types
@@ -490,6 +492,7 @@ ${t("contact.wa.departure")}: ${form.departure}${form.budget ? `\n${t("contact.w
               </a>
             </div>
           </div>
+          <ReviewsCarousel />
         </div>
 
         {/* Правая колонка — форма */}

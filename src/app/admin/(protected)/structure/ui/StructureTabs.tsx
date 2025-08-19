@@ -8,6 +8,7 @@ const items = [
   { href: "/admin/structure/hero",         label: "Hero" },
   { href: "/admin/structure/destinations", label: "Destinations" },
   { href: "/admin/structure/admins",       label: "Admins" },
+  { href: "/admin/structure/reviews",      label: "Reviews"},
 ];
 
 export default function StructureTabs() {

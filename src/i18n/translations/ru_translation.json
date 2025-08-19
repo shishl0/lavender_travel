@@ -1,6 +1,6 @@
 {
   "brand": "Lavender Travel KZ",
-  "nav": { "tours": "Туры", "why": "Почему мы", "contacts": "Контакты", "whatsapp": "WhatsApp" },
+  "nav": { "tours": "Туры", "why": "Почему мы", "contacts": "Контакты", "whatsapp": "WhatsApp", "instagram": "Instagram" , "reviews": "Отзывы"},
 
   "hero": {
     "kicker": "Lavender Travel",

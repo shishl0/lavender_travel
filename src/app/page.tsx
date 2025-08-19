@@ -8,6 +8,7 @@ import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import WhatsAppFab from "@/components/WhatsAppFab";
 import SmoothScroll from "@/components/SmoothScroll";
+import ReviewPublicForm from '@/components/reviews/ReviewPublicForm';
 
 export default async function Page() {
   // всё — из кеша (unstable_cache)
@@ -28,6 +29,7 @@ export default async function Page() {
         <Destinations cms={dests ?? []} />
         <WhyUs />
         <Contact settings={settings ?? null} />
+        <ReviewPublicForm />
       </main>
       <Footer settings={settings ?? null} />
       <WhatsAppFab phone={waDigits} />

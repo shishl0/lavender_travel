@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { CleanupButton, WipeAllButton } from "./ui/Buttons";
+import { formatDateTime } from "@/lib/tz";
 
 export const dynamic = "force-dynamic";
 
@@ -15,16 +16,6 @@ function toInt(v: string | string[] | undefined, def: number, min = 1, max = 500
   return Math.max(min, Math.min(max, n));
 }
 
-const fmtKZ = new Intl.DateTimeFormat("ru-RU", {
-  timeZone: "Asia/Almaty",
-  year: "2-digit",
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  second: "2-digit",
-  hour12: false,
-});
 
 export default async function ActivityPage({
   searchParams,
@@ -270,7 +261,7 @@ function Row({
     <>
       <tr className="border-t">
         <td className="px-3 py-2 align-top text-gray-700" title={row.ts.toISOString()}>
-          {fmtKZ.format(new Date(row.ts))}
+          {formatDateTime(row.ts)}
         </td>
         <td className="px-3 py-2 align-top font-medium text-[var(--navy)] break-all">{row.action}</td>
         <td className="px-3 py-2 align-top"><StatusBadge status={row.status} /></td>
