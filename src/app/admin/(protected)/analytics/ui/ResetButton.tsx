@@ -12,7 +12,7 @@ export default function ResetButton() {
       const res = await fetch("/api/analytics/reset", { method: "POST" });
       if (!res.ok) throw new Error("reset failed");
       location.reload();
-    } catch (e) {
+    } catch {
       alert("Ошибка сброса аналитики");
     } finally {
       setPending(false);
@@ -22,7 +22,7 @@ export default function ResetButton() {
   return (
     <button
       type="button"
-      onClick={async (_e) => { /* ... */ }}
+      onClick={onClick}
       className="text-sm px-3 py-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50 press"
       disabled={pending}
     >

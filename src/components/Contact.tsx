@@ -487,7 +487,13 @@ ${t("contact.wa.departure")}: ${form.departure}${form.budget ? `\n${t("contact.w
             </div>
             <div>
               📩 {t("contact.links.instagram")}:{" "}
-              <a href={instagramHref} target="_blank" className="underline" rel="noreferrer">
+                <a
+                  href={instagramHref}
+                  target="_blank"
+                  className="underline"
+                  rel="noreferrer"
+                  onClick={() => track("click_instagram", { place: "contact_info" })}
+                >
                 @{instagramHandle}
               </a>
             </div>

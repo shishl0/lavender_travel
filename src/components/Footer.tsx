@@ -8,7 +8,7 @@ export default function Footer({ settings }: { settings: SiteSettingsDTO | null 
   const year = new Date().getFullYear();
   const locale = i18n.language;
 
-  const onIg = () => track("click_footer_instagram", { locale });
+  const onIg = () => track("click_instagram", { place: "footer", locale });
   const onWa = () => track("click_whatsapp", { place: "footer", locale });
 
   return (

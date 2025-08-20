@@ -277,7 +277,7 @@ export default function AdminsManager({
                     )}
                   </td>
 
-                  <td className="px-3 py-2 text-right">
+                  <td className="px-3 py-3 text-right">
                     <button
                       className="btn-ghost press mr-2"
                       onClick={() => canManage && resetPassword(u.id)}
@@ -286,11 +286,12 @@ export default function AdminsManager({
                       Сбросить пароль
                     </button>
                     <button
-                      className="text-rose-600 hover:underline"
                       onClick={() => canManage && removeUser(u.id)}
                       disabled={!canManage || !!isBusy}
-                    >
-                      Удалить
+                      className="h-9 w-9 place-items-center rounded-lg text-rose-600 hover:bg-rose-50 press"
+                      title="Удалить"
+                      >
+                      <b>x</b>
                     </button>
                   </td>
                 </tr>

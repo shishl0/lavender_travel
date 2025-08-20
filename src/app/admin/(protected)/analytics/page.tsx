@@ -23,28 +23,43 @@ type ParsedRange = {
   code: RangeCode;
   days: number;
   granularity: Granularity;
-  label: string;
+  baseLabel: string;
 };
 
 function parseRange(sp: Record<string, string | string[] | undefined>): ParsedRange {
   const q = (typeof sp?.range === "string" ? sp.range : "30d") as RangeCode;
   switch (q) {
     case "today":
-      return { code: q, days: 1, granularity: "hour", label: "за сегодня" };
+      return { code: q, days: 1, granularity: "hour", baseLabel: "за день" };
     case "7d":
-      return { code: q, days: 7, granularity: "day", label: "за 7 дней" };
+      return { code: q, days: 7, granularity: "day", baseLabel: "за 7 дней" };
     case "180d":
-      return { code: q, days: 180, granularity: "day", label: "за 180 дней" };
+      return { code: q, days: 180, granularity: "day", baseLabel: "за 180 дней" };
     case "30d":
     default:
-      return { code: "30d", days: 30, granularity: "day", label: "за 30 дней" };
+      return { code: "30d", days: 30, granularity: "day", baseLabel: "за 30 дней" };
   }
 }
 
-function bucketByDay(rows: { createdAt: Date }[], days = 30) {
-  const ymds = recentDaysYMD(days, APP_TZ);
+/** +N/-N дней к YMD в таймзоне APP_TZ */
+function ymdAdd(ymd: string, deltaDays: number) {
+  const d = ymdToUTCDate(ymd); // начало дня в TZ -> UTC Date
+  d.setUTCDate(d.getUTCDate() + deltaDays);
+  return ymdInTZ(d, APP_TZ);
+}
+
+/** Возвращает список YMD начиная с startYmd длиной days */
+function makeDaysRange(startYmd: string, days: number) {
+  const out: string[] = [];
+  for (let i = 0; i < days; i++) out.push(ymdAdd(startYmd, i));
+  return out;
+}
+
+/** Бакет по дням строго по заданному диапазону YMD */
+function bucketByDayExact(rows: { createdAt: Date }[], startYmd: string, days: number) {
+  const ymds = makeDaysRange(startYmd, days);
   const map = new Map<string, number>();
-  for (const ymd of ymds) map.set(ymd, 0);
+  for (const y of ymds) map.set(y, 0);
 
   for (const r of rows) {
     const key = ymdInTZ(r.createdAt, APP_TZ);
@@ -68,34 +83,75 @@ function bucketByHour(rows: { createdAt: Date }[]) {
   return Array.from(map.entries()).map(([h, value]) => ({ x: hourLabel(h), y: value }));
 }
 
+/** Считает окно [since, until) по TZ с учётом offset */
+function computeWindow(days: number, granularity: Granularity, offset: number) {
+  const now = new Date();
+  const baseYmd = ymdInTZ(now, APP_TZ);
+
+  // не позволяем листать в будущее
+  const off = Math.min(offset, 0);
+
+  const startYmd =
+    granularity === "hour"
+      ? ymdAdd(baseYmd, off)          // «1 день» листаем по 1 дню
+      : ymdAdd(baseYmd, off * days);  // 7/30/180 — пачками
+
+  const endYmd = ymdAdd(startYmd, granularity === "hour" ? 1 : days);
+
+  const since = ymdToUTCDate(startYmd); // включительно
+  const until = ymdToUTCDate(endYmd);   // исключительно
+
+  return { since, until, startYmd, endYmd };
+}
+
+function formatRangeLabel(startYmd: string, endYmd: string, granularity: Granularity) {
+  if (granularity === "hour") {
+    return dayLabelFromYMD(startYmd); // один день
+  }
+  // интервал по датам: [start; end)
+  const start = dayLabelFromYMD(startYmd);
+  const lastDayYmd = ymdAdd(endYmd, -1);
+  const end = dayLabelFromYMD(lastDayYmd);
+  return `${start} — ${end}`;
+}
+
 export default async function AnalyticsPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = await searchParams;
-  const { code, days, granularity, label } = parseRange(sp);
+  const { code, days, granularity, baseLabel } = parseRange(sp);
 
-  const since = new Date(Date.now() - (days + 1) * 86400000);
+  const offset = Number(typeof sp?.offset === "string" ? sp.offset : 0) || 0;
+  const { since, until, startYmd, endYmd } = computeWindow(days, granularity, offset);
+  const label = formatRangeLabel(startYmd, endYmd, granularity);
 
   const session = await getServerSession(authOptions);
   const role = (session?.user as any)?.role ?? "VIEWER";
   const canReset = role === "ADMIN";
 
   // 1) Сырые события
-  const [pv, wa, leads] = await Promise.all([
+  const [pv, wa, ig, leads] = await Promise.all([
     prisma.analyticsEvent.findMany({
-      where: { type: "page_view", createdAt: { gte: since } },
+      where: { type: "page_view", createdAt: { gte: since, lt: until } },
       select: { createdAt: true },
       orderBy: { createdAt: "asc" },
     }),
     prisma.analyticsEvent.findMany({
-      where: { type: "click_whatsapp", createdAt: { gte: since } },
+      where: { type: "click_whatsapp", createdAt: { gte: since, lt: until } },
       select: { createdAt: true },
       orderBy: { createdAt: "asc" },
     }),
     prisma.analyticsEvent.findMany({
-      where: { type: "submit_form", createdAt: { gte: since } },
+      where: {
+      createdAt: { gte: since, lt: until },
+      OR: [{ type: "click_instagram" }, { type: "click_footer_instagram" }],},
+      select: { createdAt: true },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.analyticsEvent.findMany({
+      where: { type: "submit_form", createdAt: { gte: since, lt: until } },
       select: { createdAt: true },
       orderBy: { createdAt: "asc" },
     }),
@@ -105,12 +161,12 @@ export default async function AnalyticsPage({
   const [devicesRaw, localesRaw] = await Promise.all([
     prisma.analyticsEvent.groupBy({
       by: ["device"],
-      where: { createdAt: { gte: since } },
+      where: { createdAt: { gte: since, lt: until } },
       _count: { _all: true },
     }),
     prisma.analyticsEvent.groupBy({
       by: ["locale"],
-      where: { createdAt: { gte: since } },
+      where: { createdAt: { gte: since, lt: until } },
       _count: { _all: true },
     }),
   ]);
@@ -123,9 +179,9 @@ export default async function AnalyticsPage({
     .sort((a, b) => b._count._all - a._count._all)
     .map((r) => ({ label: r.locale ?? "—", value: r._count._all }));
 
-  // 3) UTM из JSON (source/medium/campaign)
+  // 3) UTM из JSON
   const utmRows = await prisma.analyticsEvent.findMany({
-    where: { createdAt: { gte: since } },
+    where: { createdAt: { gte: since, lt: until } },
     select: { utm: true },
   });
   function topFromJson(key: "source" | "medium" | "campaign", topN = 8) {
@@ -145,18 +201,21 @@ export default async function AnalyticsPage({
   const utmCampaign = topFromJson("campaign");
 
   // 4) Серии для графиков
-  const makeSeries = (rows: { createdAt: Date }[]) =>
-    granularity === "hour" ? bucketByHour(rows) : bucketByDay(rows, days);
-
-  const pvSeries = makeSeries(pv);
-  const waSeries = makeSeries(wa);
-  const leadSeries = makeSeries(leads);
+  const pvSeries = granularity === "hour" ? bucketByHour(pv) : bucketByDayExact(pv, startYmd, days);
+  const waSeries = granularity === "hour" ? bucketByHour(wa) : bucketByDayExact(wa, startYmd, days);
+  const igSeries = granularity === "hour" ? bucketByHour(ig) : bucketByDayExact(ig, startYmd, days);
+  const leadSeries = granularity === "hour" ? bucketByHour(leads) : bucketByDayExact(leads, startYmd, days);
 
   // 5) Метрики
   const visits = pv.length || 1;
   const clicks = wa.length;
+  const igClicks = ig.length;
   const leadCount = leads.length;
   const cvWhToLead = visits ? Math.round((leadCount / visits) * 1000) / 10 : 0;
+
+  // ссылки навигации по окнам
+  const mkHref = (r: RangeCode, off: number) => `/admin/analytics?range=${r}&offset=${off}`;
+  const canGoForward = offset < 0;
 
   return (
     <div className="grid gap-4">
@@ -165,13 +224,56 @@ export default async function AnalyticsPage({
         {canReset && <ResetButton />}
       </div>
 
-      {/* Фильтры периодов */}
-      <div className="flex items-center gap-2 text-sm">
-        <RangeTab code="today" active={code} label="Сегодня" />
-        <RangeTab code="7d" active={code} label="7 дней" />
-        <RangeTab code="30d" active={code} label="30 дней" />
-        <RangeTab code="180d" active={code} label="180 дней" />
-        <div className="ml-auto text-xs text-gray-500">{label}</div>
+      {/* Фильтры + навигация по окнам */}
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        {/* Табы диапазонов */}
+        <RangeTab code="today" active={code} label="1 день" currentOffset={offset} />
+        <RangeTab code="7d" active={code} label="7 дней" currentOffset={offset} />
+        <RangeTab code="30d" active={code} label="30 дней" currentOffset={offset} />
+        <RangeTab code="180d" active={code} label="180 дней" currentOffset={offset} />
+
+        {/* Пейджер интервалов */}
+        <div className="ml-auto flex items-center gap-2">
+        <Link
+          href={mkHref(code, offset - 1)}
+          className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-gray-300 bg-white
+                    hover:bg-gray-50 active:scale-[0.98] transition press"
+          aria-label="Назад"
+          title="Назад"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </Link>
+
+        <div className="px-3 h-9 inline-flex items-center rounded-full border border-gray-200 bg-white text-xs text-gray-700">
+          {baseLabel} · {label}
+        </div>
+
+        {canGoForward ? (
+          <Link
+            href={mkHref(code, offset + 1)}
+            className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-gray-300 bg-white
+                      hover:bg-gray-50 active:scale-[0.98] transition press"
+            aria-label="Вперёд"
+            title="Вперёд"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </Link>
+        ) : (
+          <span
+            aria-disabled
+            className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
+            title="Текущий период"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </span>
+        )}
+      </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4">
@@ -187,6 +289,13 @@ export default async function AnalyticsPage({
             {clicks}
           </div>
           <ChartCard data={waSeries} />
+        </Card>
+        
+        <Card title="Клики Instagram">
+          <div className={`text-2xl font-semibold ${igSeries.some((s) => s.y > 0) ? "" : "opacity-60"}`}>
+          {igClicks}
+          </div>
+          <ChartCard data={igSeries} />
         </Card>
 
         <Card title="Заявки с формы">
@@ -226,14 +335,26 @@ export default async function AnalyticsPage({
   );
 }
 
-function RangeTab({ code, active, label }: { code: RangeCode; active: RangeCode; label: string }) {
+function RangeTab({
+  code,
+  active,
+  label,
+  currentOffset,
+}: {
+  code: RangeCode;
+  active: RangeCode;
+  label: string;
+  currentOffset: number;
+}) {
   const isActive = code === active;
   return (
     <Link
-      href={`/admin/analytics?range=${code}`}
-      className={`px-3 py-1.5 rounded-lg border text-[13px] ${
-        isActive ? "bg-[#5e3bb7]/10 border-[#5e3bb7]/30 text-[#3c2a7a]" : "hover:bg-gray-50"
-      }`}
+      href={`/admin/analytics?range=${code}&offset=0`}
+      aria-current={isActive ? "page" : undefined}
+      className={`px-3 h-9 inline-flex items-center rounded-full border text-[13px] transition
+        ${isActive
+          ? "bg-[#5e3bb7]/10 border-[#5e3bb7]/30 text-[#3c2a7a]"
+          : "bg-white border-gray-300 hover:bg-gray-50 text-gray-800"}`}
     >
       {label}
     </Link>

@@ -247,12 +247,12 @@ export default function HeroManager({
                       </button>
                     )}
                     <button
-                      className="text-xs px-2 py-1 rounded-md border hover:bg-gray-50 press disabled:opacity-60"
-                      disabled={!!busy || pending || active}
                       onClick={() => remove(h.id)}
+                      disabled={!!busy || pending || active}
+                      className="h-9 w-9 grid place-items-center rounded-lg text-rose-600 hover:bg-rose-50 press disabled:opacity-60"
                       title={active ? "Нельзя удалить активный" : "Удалить"}
-                    >
-                      Удалить
+                      >
+                      <b>x</b>
                     </button>
                   </div>
                 </div>

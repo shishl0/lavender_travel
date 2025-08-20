@@ -121,13 +121,13 @@ export default function SiteSettingsClient({
 
                   {!isActive && (
                     <button
-                      className="text-xs px-2 py-1 rounded-md border hover:bg-gray-50 press disabled:opacity-60"
-                      onClick={() => remove(s.id)}
-                      disabled={busyId === s.id || isPending}
-                      title="Удалить профиль"
+                    onClick={() => remove(s.id)}
+                    disabled={busyId === s.id || isPending}
+                    className="h-9 w-9 grid place-items-center rounded-lg text-rose-600 hover:bg-rose-50 press disabled:opacity-60"
+                    title="Удалить профиль"
                     >
-                      {busyId === s.id ? "Удаляем…" : "Удалить"}
-                    </button>
+                    <b>x</b>
+                  </button>
                   )}
                 </div>
               </li>

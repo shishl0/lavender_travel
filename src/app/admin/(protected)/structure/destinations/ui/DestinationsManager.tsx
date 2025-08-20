@@ -203,11 +203,12 @@ export default function DestinationsManager({ initial }: { initial: Item[] }) {
                     Активен {disableToggleOn ? "(макс. 8)" : ""}
                   </label>
                   <button
-                    className="text-sm text-rose-600 hover:underline"
                     onClick={() => removeAt(idx)}
                     disabled={busy === "delete"}
-                  >
-                    Удалить
+                    className="h-9 w-9 grid place-items-center rounded-lg text-rose-600 hover:bg-rose-50 press"
+                    title="Удалить"
+                    >
+                    <b>x</b>
                   </button>
                 </div>
               </div>

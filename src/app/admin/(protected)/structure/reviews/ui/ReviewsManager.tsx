@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition, useId } from "react";
 import ImagesUploader from "./ImagesUploader";
 
 /* ========= Types ========= */
@@ -61,20 +61,47 @@ function enrichRow(r: any): ReviewRow {
 }
 
 /* ========= Stars ========= */
-function Stars({ value = 0, size = 16, className = "" }: { value?: number; size?: number; className?: string }) {
-  const v = clamp(Math.round(value || 0), 0, 5);
+function Stars({
+  value = 0,
+  size = 16,
+  className = "",
+}: {
+  value?: number;
+  size?: number;
+  className?: string;
+}) {
+  const uid = useId();
+  const v = clamp(Number(value) || 0, 0, 5);
+
+  const starPath =
+    "M12 17.27l6.18 3.73-1.64-7.03L21.5 9.24l-7.19-.61L12 2 9.69 8.63 2.5 9.24l4.96 4.73L5.82 21z";
+
   return (
     <div className={`inline-flex items-center gap-0.5 ${className}`}>
       {Array.from({ length: 5 }).map((_, i) => {
-        const active = i < v;
+        const fillPart = clamp(v - i, 0, 1);
+        const clipId = `${uid}-clip-${i}`;
+        const fillWidth = 24 * fillPart;
+
         return (
           <svg key={i} width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              d="M12 17.27l6.18 3.73-1.64-7.03L21.5 9.24l-7.19-.61L12 2 9.69 8.63 2.5 9.24l4.96 4.73L5.82 21z"
-              fill={active ? "#f5b301" : "none"}
-              stroke={active ? "#f5b301" : "#D1D5DB"}
-              strokeWidth="1.3"
-            />
+            <defs>
+              <clipPath id={clipId}>
+                <rect x="0" y="0" width={fillWidth} height="24" />
+              </clipPath>
+            </defs>
+
+            <path d={starPath} fill="none" stroke="#D1D5DB" strokeWidth="1.3" />
+
+            {fillPart > 0 && (
+              <path
+                d={starPath}
+                clipPath={`url(#${clipId})`}
+                fill="#f5b301"
+                stroke="#f5b301"
+                strokeWidth="1.3"
+              />
+            )}
           </svg>
         );
       })}
@@ -316,7 +343,7 @@ export default function ReviewsManager({
                           className="h-9 w-9 grid place-items-center rounded-lg text-rose-600 hover:bg-rose-50 press"
                           title="Удалить"
                         >
-                          ✕
+                          <b>x</b>
                         </button>
                       </div>
                     </td>
