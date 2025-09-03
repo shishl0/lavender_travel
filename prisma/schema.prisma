@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
   // через Supabase pooler — быстрее и стабильнее для прод-ворклоада
   url       = env("DATABASE_URL")
   // прямое подключение для миграций (обычно db.xxx.supabase.co с sslmode=require)
@@ -46,57 +46,74 @@ enum HeroVariant {
 // 1) Несколько SiteSettings, но в UI/сервере гарантируем, что активен ровно один.
 //    Используем поля для брендовой шапки + meta.
 model SiteSettings {
-  id              String   @id @default(uuid())
-  isActive        Boolean  @default(false)
+  id       String  @id @default(uuid())
+  isActive Boolean @default(false)
 
-  // Бренд в шапке/футере
-  brandName       String
-  brandTagline    String?      // подзаголовок (в шапке серым текстом)
+  // Бренд
+  brandName    String
+  brandTagline String?
 
-  // Метаданные сайта
+  // Мета
   metaTitle       String
   metaDescription String
-  ogImageUrl      String?      // абсолютный или относительный URL
+  ogImageUrl      String?
 
   // Контакты
-  whatsappNumber  String?      // форматируй на UI, храним “сырой”
-  instagramUrl    String?
+  whatsappNumber String?
+  instagramUrl   String?
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  statsClients   Int? // “сколько клиентов”
+  statsRating    Float? // средняя оценка /5
+  inTourismSince DateTime? // дата “в туризме с...”
+  statsMode      String? // 'shown' | 'hidden' | 'auto'
+  statsAutoAt    DateTime? // для режима 'auto'
+
+  address        Json? // локализуемо: {ru:"...", kk:"...", en:"..."}
+  certificateUrl String? // PDF (абсолютный/относительный URL)
+
+  privacyPolicy  Json? // {ru: <rich>, kk:..., en:...}
+  termsOfService Json? // {ru: <rich>, kk:..., en:...}
+
+  pricingMinPriceEnabled Boolean @default(false) // галка “показывать минималку”
+  pricingMinPriceFormula String? // формула/DSL (позже)
+  pricingMatrixUrl       String? // источник матрицы (позже)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
-
 
 // 2) Несколько Hero-конфигураций, активной должна быть одна (через isActive = true)
 model Hero {
-  id           String   @id @default(uuid())
-  isActive     Boolean  @default(false)
-  variant      HeroVariant @default(DEFAULT)
+  id       String      @id @default(uuid())
+  isActive Boolean     @default(false)
+  variant  HeroVariant @default(DEFAULT)
 
-  // Локализуемые тексты — Json вида: { "ru":"...", "kk":"...", "en":"..." }
-  kicker       Json
-  titleTop     Json
-  titleBottom  Json
-  subtitle     Json
-  ctaPrimary   Json
-  ctaSecondary Json
+  kicker      Json
+  titleTop    Json
+  titleBottom Json
+  subtitle    Json
 
-  imageUrl     String?
-  imageAlt     Json // локализуемый alt
+  imageUrl String?
+  imageAlt Json
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // 3) Каталог направлений (макс. 8 активных — проверим в приложении)
 //    порядок карточек — через sortOrder (drag&drop)
 model Destination {
-  id        String   @id @default(uuid())
-  key       String   @unique          // "turkey", "vietnam" и т.п.
-  title     Json                     // локализуемое имя
+  id        String  @id @default(uuid())
+  key       String  @unique
+  title     Json
   imageUrl  String?
-  isActive  Boolean  @default(true)
-  sortOrder Int      @default(0)
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  cities        Json? // {ru:["Анталья","..."], kk:[...], en:[...]}
+  priceFrom     Int? // ручной “от … ₸” (если нужен)
+  allowMinPrice Boolean @default(false) // можно ли выводить минималку по этой стране
+  showOnHome    Boolean @default(false) // для тизеров/главной
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -108,33 +125,33 @@ model Destination {
 
 // 4) Отправленные заявки из Contact формы
 model FormSubmission {
-  id            String           @id @default(uuid())
-  name          String
-  phone         String
-  tour          String
-  departure     String
-  budget        String?
+  id        String  @id @default(uuid())
+  name      String
+  phone     String
+  tour      String
+  departure String
+  budget    String?
 
   adults        Int
   childrenCount Int
-  childrenAges  Json             // массив чисел
+  childrenAges  Json // массив чисел
 
-  checkIn       DateTime?
-  checkOut      DateTime?
-  message       String?
+  checkIn  DateTime?
+  checkOut DateTime?
+  message  String?
 
-  locale        String?          // ru/kk/en
-  status        SubmissionStatus @default(NEW)
+  locale String? // ru/kk/en
+  status SubmissionStatus @default(NEW)
 
-  createdAt     DateTime         @default(now())
+  createdAt DateTime @default(now())
 }
 
 // 5) Черновики форм (не отправленные)
 model FormDraft {
-  id            String   @id @default(uuid())
-  data          Json     // “снимок” всей формы
-  locale        String?
-  createdAt     DateTime @default(now())
+  id        String   @id @default(uuid())
+  data      Json // “снимок” всей формы
+  locale    String?
+  createdAt DateTime @default(now())
 }
 
 // ----------------------
@@ -144,19 +161,19 @@ model FormDraft {
 // ----------------------
 
 model AnalyticsEvent {
-  id        String   @id @default(uuid())
-  type      String
-  path      String?
-  referrer  String?
-  device    String?
-  locale    String?
-  utm       Json?
+  id       String  @id @default(uuid())
+  type     String
+  path     String?
+  referrer String?
+  device   String?
+  locale   String?
+  utm      Json?
 
   // Денормализованные поля для быстрых группировок
-  source    String?   // google | instagram | facebook | tiktok | direct | referral host | etc
-  medium    String?   // cpc | social | email | ...
-  campaign  String?
-  channel   String?   // paid | organic | social | referral | direct
+  source   String? // google | instagram | facebook | tiktok | direct | referral host | etc
+  medium   String? // cpc | social | email | ...
+  campaign String?
+  channel  String? // paid | organic | social | referral | direct
 
   createdAt DateTime @default(now())
 
@@ -168,30 +185,30 @@ model AnalyticsEvent {
 
 // Суточная агрегированная таблица — для хранения статистики после 180 дней
 model AnalyticsDaily {
-  id           String   @id @default(uuid())
-  day          DateTime // дата (00:00:00)
-  type         String   // тип события (или 'all')
-  path         String?  // опционально по пути
-  locale       String?  // опционально по локали
-  count        Int      @default(0)
+  id     String   @id @default(uuid())
+  day    DateTime // дата (00:00:00)
+  type   String // тип события (или 'all')
+  path   String? // опционально по пути
+  locale String? // опционально по локали
+  count  Int      @default(0)
 
   @@unique([day, type, path, locale]) // уникальная “ячейка” агрегата
 }
 
 model User {
-  id            String   @id @default(uuid())
-  email         String   @unique
-  name          String?
-  passwordHash  String
-  role          Role     @default(ADMIN)
-  image         String?
+  id           String  @id @default(uuid())
+  email        String  @unique
+  name         String?
+  passwordHash String
+  role         Role    @default(ADMIN)
+  image        String?
 
-  lastLoginAt   DateTime?
+  lastLoginAt DateTime?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  sessions      Session[]
+  sessions Session[]
 }
 
 model Session {
@@ -203,30 +220,30 @@ model Session {
 }
 
 model Activity {
-  id          String         @id @default(cuid())
-  ts          DateTime       @default(now())
-  action      String
-  route       String
-  method      String
-  status      ActivityStatus @default(OK)
+  id     String         @id @default(cuid())
+  ts     DateTime       @default(now())
+  action String
+  route  String
+  method String
+  status ActivityStatus @default(OK)
 
   // кто
-  actorId     String?
-  actorEmail  String?
-  role        String?
+  actorId    String?
+  actorEmail String?
+  role       String?
 
   // что меняли (по желанию)
-  targetType  String?
-  targetId    String?
+  targetType String?
+  targetId   String?
 
   // мета
-  ip          String?
-  ua          String?
-  durationMs  Int?
-  payload     Json?
-  diff        Json?
-  error       String?
-  meta        Json?
+  ip         String?
+  ua         String?
+  durationMs Int?
+  payload    Json?
+  diff       Json?
+  error      String?
+  meta       Json?
 
   @@index([ts], map: "idx_activity_ts")
   @@index([action, ts], map: "idx_activity_action_ts")
@@ -234,14 +251,14 @@ model Activity {
 }
 
 model Review {
-  id        String   @id @default(cuid())
-  name      String
-  text      String   @db.Text
-  images    String[] @default([])
+  id     String   @id @default(cuid())
+  name   String
+  text   String   @db.Text
+  images String[] @default([])
 
-  rating    Int      @default(5) @db.SmallInt
+  rating Int @default(5) @db.SmallInt
 
-  isActive  Boolean  @default(false)
+  isActive Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

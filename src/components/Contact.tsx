@@ -464,44 +464,6 @@ ${t("contact.wa.departure")}: ${form.departure}${form.budget ? `\n${t("contact.w
   return (
     <section id="contact" className="section">
       <div className="container grid md:grid-cols-2 gap-10 items-start">
-        {/* Левая колонка — инфо */}
-        <div>
-          <div className="kicker">{t("contact.kicker")}</div>
-          <h3 className="mt-2 text-3xl font-bold" style={{ color: "var(--navy)" }}>
-            {t("contact.title")}
-          </h3>
-          <p className="mt-4 text-gray-600">{t("contact.subtitle")}</p>
-
-          <div className="mt-6 text-sm text-gray-700 space-y-1">
-            <div>
-              📞{" "}
-              <a
-                href={waHref}
-                target="_blank"
-                className="underline"
-                rel="noreferrer"
-                onClick={() => track("click_whatsapp", { place: "contact_info" })}
-              >
-                {displayPhone}
-              </a>
-            </div>
-            <div>
-              📩 {t("contact.links.instagram")}:{" "}
-                <a
-                  href={instagramHref}
-                  target="_blank"
-                  className="underline"
-                  rel="noreferrer"
-                  onClick={() => track("click_instagram", { place: "contact_info" })}
-                >
-                @{instagramHandle}
-              </a>
-            </div>
-          </div>
-          <ReviewsCarousel />
-        </div>
-
-        {/* Правая колонка — форма */}
         <form onSubmit={submit} className="card p-6 fade-in">
           {/* Имя */}
           <label className="text-sm font-medium">{t("contact.form.name.label")}</label>

@@ -22,6 +22,7 @@ const ALLOWED_ORIGINAL = [
   "image/heif",
   "image/avif",
   "image/tiff",
+  "application/pdf",
 ] as const;
 
 const MAX_INPUT_BYTES = 30 * 1024 * 1024; // 30MB
@@ -39,6 +40,7 @@ function extByType(t: string) {
     case "image/heif": return ".heic";
     case "image/avif": return ".avif";
     case "image/tiff": return ".tiff";
+    case "application/pdf": return ".pdf";
     default: return "";
   }
 }
@@ -196,7 +198,12 @@ async function _POST(req: Request) {
 
     const uploadsDir = path.join(process.cwd(), "public", "uploads");
     await fs.mkdir(uploadsDir, { recursive: true });
-
+      if (incomingType === "application/pdf") {
+        const filename = `${Date.now()}-${randomUUID()}.pdf`;
+        await fs.writeFile(path.join(uploadsDir, filename), bytes);
+        if (rlInfo) await rlInc(rlInfo.dateKey, rlInfo.key, rlInfo.src);
+        return NextResponse.json({ ok: true, url: `/uploads/${filename}`, contentType: "application/pdf" });
+      }
     // === Ветка ADMIN/EDITOR — сохраняем оригинал без перекодирования ===
     if (isPrivileged) {
       let ct = incomingType;

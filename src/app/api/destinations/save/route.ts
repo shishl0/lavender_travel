@@ -6,31 +6,74 @@ import { requireRole } from "@/lib/require-auth";
 
 export const dynamic = "force-dynamic";
 
+const asLocStrings = (v: any) => (v && typeof v === "object" ? v : null);
+const asIntOrNull = (v: any) => (Number.isFinite(Number(v)) ? Number(v) : null);
+
 async function _POST(req: Request) {
   await requireRole(["ADMIN", "EDITOR"]);
 
   try {
     const body = await req.json();
-    const { id, key, title, imageUrl, isActive } = body || {};
+    const {
+      id,
+      key,
+      title,
+      imageUrl,
+      isActive,
+      sortOrder,
+      // NEW:
+      cities,
+      priceFrom,
+      allowMinPrice,
+      showOnHome,
+    } = body || {};
+
     if (!key || !title) {
       return NextResponse.json({ ok: false, error: "Missing key/title" }, { status: 400 });
     }
 
+    const base = {
+      key: String(key),
+      title: title as any,
+      imageUrl: typeof imageUrl === "string" && imageUrl.trim() ? imageUrl.trim() : null,
+      isActive: !!isActive,
+
+      // NEW:
+      cities: asLocStrings(cities),
+      priceFrom: asIntOrNull(priceFrom),
+      allowMinPrice: !!allowMinPrice,
+      showOnHome: !!showOnHome,
+    };
+
+    let savedId: string;
+
     if (id) {
+      // в update можно безопасно передать sortOrder, если прислали
       const updated = await prisma.destination.update({
-        where: { id },
-        data: { key, title, imageUrl, isActive: !!isActive },
+        where: { id: String(id) },
+        data: {
+          ...base,
+          ...(Number.isFinite(Number(sortOrder)) ? { sortOrder: Number(sortOrder) } : {}),
+        },
+        select: { id: true },
       });
-      invalidateDestinations();
-      return NextResponse.json({ ok: true, id: updated.id });
+      savedId = updated.id;
     } else {
       const tail = await prisma.destination.count();
+      const createSortOrder = Number.isFinite(Number(sortOrder)) ? Number(sortOrder) : tail;
+
       const created = await prisma.destination.create({
-        data: { key, title, imageUrl, isActive: !!isActive, sortOrder: tail },
+        data: {
+          ...base,
+          sortOrder: createSortOrder, // ← без дублирования/перезаписи
+        },
+        select: { id: true },
       });
-      invalidateDestinations();
-      return NextResponse.json({ ok: true, id: created.id });
+      savedId = created.id;
     }
+
+    invalidateDestinations();
+    return NextResponse.json({ ok: true, id: savedId });
   } catch (e) {
     console.error("destinations/save", e);
     return NextResponse.json({ ok: false, error: "Internal error" }, { status: 500 });

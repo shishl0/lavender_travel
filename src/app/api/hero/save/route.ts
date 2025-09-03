@@ -14,29 +14,18 @@ async function _POST(req: Request) {
     const {
       id,
       kicker, titleTop, titleBottom, subtitle,
-      ctaPrimary, ctaSecondary,
       imageUrl, imageAlt,
     } = body || {};
 
+    const data = { kicker, titleTop, titleBottom, subtitle, imageUrl, imageAlt } as const;
+
     if (id) {
-      await prisma.hero.update({
-        where: { id },
-        data: {
-          kicker, titleTop, titleBottom, subtitle,
-          ctaPrimary, ctaSecondary,
-          imageUrl, imageAlt,
-        },
-      });
+      await prisma.hero.update({ where: { id }, data });
       invalidateHero();
       return NextResponse.json({ ok: true, id });
     } else {
       const created = await prisma.hero.create({
-        data: {
-          isActive: false,
-          kicker, titleTop, titleBottom, subtitle,
-          ctaPrimary, ctaSecondary,
-          imageUrl, imageAlt,
-        },
+        data: { isActive: false, ...data },
       });
       invalidateHero();
       return NextResponse.json({ ok: true, id: created.id });
@@ -51,7 +40,7 @@ export const POST = withAudit(
   "hero.save",
   _POST,
   (_req, _ctx, payload) => ({ type: "Hero", id: payload?.id ?? null }),
-  "json"
+  "json",
 );
 
 export async function GET() {

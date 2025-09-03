@@ -1,6 +1,6 @@
 import { unstable_cache, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/prisma';
-import type { DestinationDTO, HeroDTO, Localized, SiteSettingsDTO } from '@/types/cms';
+import type { DestinationDTO, HeroDTO, Localized, LocalizedList, SiteSettingsDTO } from '@/types/cms';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -17,6 +17,7 @@ type SnapshotShape = {
   destinations: DestinationDTO[];
 } | null;
 
+/* ---------- helpers ---------- */
 async function readSnapshot(): Promise<SnapshotShape> {
   try {
     const raw = await fs.readFile(SNAPSHOT_PATH, 'utf8');
@@ -32,22 +33,67 @@ function asLocalized(v: unknown): Localized | null {
   const ru = typeof o.ru === 'string' ? o.ru : null;
   const kk = typeof o.kk === 'string' ? o.kk : null;
   const en = typeof o.en === 'string' ? o.en : null;
-  if (!ru && !kk && !en) return null;
-  return { ru: ru ?? null, kk: kk ?? null, en: en ?? null };
+  if (ru == null && kk == null && en == null) return null;
+  return { ru, kk, en };
 }
 
+function asLocalizedList(v: unknown): LocalizedList | null {
+  if (!v || typeof v !== 'object') return null;
+  const o = v as Record<string, unknown>;
+  const norm = (arr: unknown): string[] | null =>
+    Array.isArray(arr) ? arr.map(x => (typeof x === 'string' ? x : '')).filter(Boolean) : null;
+
+  const ru = norm(o.ru);
+  const kk = norm(o.kk);
+  const en = norm(o.en);
+  if (ru == null && kk == null && en == null) return null;
+  return { ru, kk, en };
+}
+
+/* ---------- mappers ---------- */
 function mapSettings(row: any | null): SiteSettingsDTO | null {
   if (!row) return null;
+
+  // даты → ISO
+  const toISO = (d: any): string | null => (d instanceof Date ? d.toISOString() : (typeof d === 'string' ? new Date(d).toISOString() : null));
+
   return {
     id: row.id,
     isActive: !!row.isActive,
+
+    // бренд / контакты
     brand: row.brandName ?? 'Lavender Travel KZ',
     tagline: row.brandTagline ?? null,
+    whatsappNumber: row.whatsappNumber ?? null,
+    instagramUrl: row.instagramUrl ?? null,
+
+    // SEO / OG (в твоих типах: title/description)
     title: row.metaTitle ?? '',
     description: row.metaDescription ?? '',
     ogImageUrl: row.ogImageUrl ?? null,
-    whatsappNumber: row.whatsappNumber ?? null,
-    instagramUrl: row.instagramUrl ?? null,
+
+    // UX (опционально, если у тебя такое поле есть — иначе оставим undefined)
+    departureOptions: undefined,
+
+    // статы / опыт
+    statsMode: row.statsMode ?? undefined,
+    statsAutoAtISO: toISO(row.statsAutoAt),
+    statsClients: (typeof row.statsClients === 'number') ? row.statsClients : null,
+    statsRating: (typeof row.statsRating === 'number') ? row.statsRating : null,
+    inTourismSinceISO: toISO(row.inTourismSince),
+
+    // адрес / документы
+    address: asLocalized(row.address) ?? null,
+    certificateUrl: row.certificateUrl ?? null,
+
+    // политики (как HTML-строки по языкам — если у тебя editor отдаёт строки)
+    privacyPolicy: asLocalized(row.privacyPolicy) ?? null,
+    termsOfService: asLocalized(row.termsOfService) ?? null,
+
+    // минимальные цены (глобально)
+    pricingMinPriceEnabled: !!row.pricingMinPriceEnabled,
+    pricingMinPriceFormula: row.pricingMinPriceFormula ?? null,
+    pricingMatrixUrl: row.pricingMatrixUrl ?? null,
   };
 }
 
@@ -57,12 +103,13 @@ function mapHero(row: any | null): HeroDTO | null {
     id: row.id,
     isActive: !!row.isActive,
     variant: row.variant ?? 'DEFAULT',
+
     kicker: asLocalized(row.kicker),
     titleTop: asLocalized(row.titleTop),
     titleBottom: asLocalized(row.titleBottom),
     subtitle: asLocalized(row.subtitle),
-    ctaPrimary: asLocalized(row.ctaPrimary),
-    ctaSecondary: asLocalized(row.ctaSecondary),
+
+    // CTA удалены из модели/DTO
     imageUrl: row.imageUrl ?? null,
     imageAlt: asLocalized(row.imageAlt),
   };
@@ -76,9 +123,16 @@ function mapDestination(row: any): DestinationDTO {
     imageUrl: row.imageUrl ?? null,
     sortOrder: Number(row.sortOrder) || 0,
     isActive: !!row.isActive,
+
+    // NEW
+    cities: asLocalizedList(row.cities),
+    priceFrom: (typeof row.priceFrom === 'number') ? row.priceFrom : null,
+    allowMinPrice: !!row.allowMinPrice,
+    showOnHome: !!row.showOnHome,
   };
 }
 
+/* ---------- fetchers with snapshot fallback ---------- */
 async function fetchActiveSettings(): Promise<SiteSettingsDTO | null> {
   try {
     const row = await prisma.siteSettings.findFirst({ where: { isActive: true } });
@@ -121,6 +175,7 @@ async function fetchActiveDestinations(): Promise<DestinationDTO[]> {
   }
 }
 
+/* ---------- cached exports ---------- */
 export const getActiveSettings = unstable_cache(
   async () => fetchActiveSettings(),
   [TAG_SETTINGS],
