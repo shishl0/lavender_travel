@@ -1,0 +1,959 @@
+(src/app/api/destinations/admin/climate/route.ts)
+#
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { withAudit } from "@/lib/audit";
+import { requireRole } from "@/lib/require-auth";
+import { invalidateDestinations } from "@/lib/cms-cache";
+import { asFloatOrNull } from "@/lib/api-normalizers";
+
+export const dynamic = "force-dynamic";
+
+type MonthsPayload = {
+  yearUsing?: number;               // по умолчанию текущий год
+  source?: string | null;           // "open-meteo" | "meteostat" | "manual"
+  airC?: (number | null)[];         // 12 значений
+  waterC?: (number | null)[];       // 12 значений
+  humidity?: (number | null)[];     // 12 значений, %
+  uvIndex?: (number | null)[];      // 12 значений
+  meta?: Record<string, any>;       // произвольная приметака
+};
+
+type ClimatePayload = {
+  id?: string;
+  key?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  source?: string | null;
+  months?: MonthsPayload;           // основной JSON блок
+};
+
+/** простая валидация массива на 12 позиций */
+function norm12(arr?: (number | null)[] | unknown): (number | null)[] {
+  const out = new Array(12).fill(null) as (number | null)[];
+  if (!Array.isArray(arr)) return out;
+  for (let i = 0; i < 12; i++) {
+    const v = asFloatOrNull(arr[i]);
+    out[i] = v;
+  }
+  return out;
+}
+
+function buildMonthsJSON(payload?: MonthsPayload) {
+  const now = new Date();
+  const y = Number(payload?.yearUsing) || now.getFullYear();
+  return {
+    yearUsing: y,
+    source: payload?.source ?? null,
+    airC: norm12(payload?.airC),
+    waterC: norm12(payload?.waterC),
+    humidity: norm12(payload?.humidity),
+    uvIndex: norm12(payload?.uvIndex),
+    meta: payload?.meta ?? {},
+  };
+}
+
+/* ======================== GET ======================== */
+
+async function _GET(req: Request) {
+  await requireRole(["ADMIN", "EDITOR"]);
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+  const key = searchParams.get("key");
+
+  if (!id && !key) {
+    return NextResponse.json({ error: "id or key required" }, { status: 400 });
+  }
+
+  const dest = id
+    ? await prisma.destination.findUnique({ where: { id } })
+    : await prisma.destination.findUnique({ where: { key: String(key) } });
+
+  if (!dest) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const climate = await prisma.destinationClimate.findUnique({
+    where: { destinationId: dest.id },
+  });
+
+  return NextResponse.json({
+    item: {
+      destinationId: dest.id,
+      key: dest.key,
+      latitude: climate?.latitude ?? null,
+      longitude: climate?.longitude ?? null,
+      source: climate?.source ?? null,
+      months: (climate?.months as any) ?? null,
+      updatedAt: climate?.updatedAt?.toISOString?.() ?? null,
+    },
+  });
+}
+
+export const GET = withAudit("destinations.climate.get", _GET);
+
+/* ======================== POST ======================== */
+
+async function _POST(req: Request) {
+  await requireRole(["ADMIN", "EDITOR"]);
+
+  try {
+    const body = (await req.json()) as ClimatePayload;
+
+    const id = body.id ?? null;
+    const key = body.key ?? null;
+    if (!id && !key) {
+      return NextResponse.json({ error: "id or key required" }, { status: 400 });
+    }
+
+    const dest = id
+      ? await prisma.destination.findUnique({ where: { id } })
+      : await prisma.destination.findUnique({ where: { key: String(key) } });
+
+    if (!dest) return NextResponse.json({ error: "Destination not found" }, { status: 404 });
+
+    const monthsJson = buildMonthsJSON(body.months);
+    const lat = asFloatOrNull(body.latitude);
+    const lon = asFloatOrNull(body.longitude);
+    const source = typeof body.source === "string" ? body.source : monthsJson.source ?? null;
+
+    // апсерт по destinationId
+    const saved = await prisma.destinationClimate.upsert({
+      where: { destinationId: dest.id },
+      create: {
+        destinationId: dest.id,
+        latitude: lat ?? null,
+        longitude: lon ?? null,
+        source: source ?? null,
+        months: monthsJson as any,
+      },
+      update: {
+        latitude: lat ?? null,
+        longitude: lon ?? null,
+        source: source ?? null,
+        months: monthsJson as any,
+      },
+      select: { id: true },
+    });
+
+    invalidateDestinations();
+    return NextResponse.json({ ok: true, id: saved.id });
+  } catch (e) {
+    console.error("climate.set error", e);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
+}
+
+export const POST = withAudit(
+  "destinations.climate.set",
+  _POST,
+  (_req, _ctx, payload) => ({ type: "DestinationClimate", id: payload?.id ?? null }),
+  "json",
+);
+#
+
+(src/app/api/destinations/admin/currency/route.ts)
+#
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { withAudit } from "@/lib/audit";
+import { requireRole } from "@/lib/require-auth";
+import { invalidateDestinations } from "@/lib/cms-cache";
+import { asStrOrNull, asFloatOrNull } from "@/lib/api-normalizers";
+
+export const dynamic = "force-dynamic";
+
+/** маленький справочник ISO4217 → название (на будущее для UI) */
+const ISO4217_NAMES: Record<string, string> = {
+  KZT: "Kazakhstani Tenge",
+  USD: "US Dollar",
+  EUR: "Euro",
+  TRY: "Turkish Lira",
+  AED: "UAE Dirham",
+  THB: "Thai Baht",
+  VND: "Vietnamese Dong",
+  EGP: "Egyptian Pound",
+  GEL: "Georgian Lari",
+};
+
+function normCode(v: unknown): string | null {
+  const s = asStrOrNull(v);
+  if (!s) return null;
+  const up = s.toUpperCase().replace(/[^A-Z]/g, "");
+  return up.length === 3 ? up : null;
+}
+
+/** вытянуть запись Destination по id или key */
+async function getDestByQuery(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+  const key = searchParams.get("key");
+  if (!id && !key) {
+    return NextResponse.json({ error: "id or key required" }, { status: 400 });
+  }
+  const row = id
+    ? await prisma.destination.findUnique({ where: { id } })
+    : await prisma.destination.findUnique({ where: { key: String(key) } });
+
+  if (!row) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  return row;
+}
+
+/* ======================== GET ======================== */
+
+async function _GET(req: Request) {
+  await requireRole(["ADMIN", "EDITOR"]);
+
+  const rowOrResp = await getDestByQuery(req);
+  if ("body" in rowOrResp) return rowOrResp as NextResponse;
+
+  const row = rowOrResp;
+  const code = row.currencyCode ?? null;
+  const base = row.currencyBase ?? "KZT";
+  const name = code ? ISO4217_NAMES[code] ?? null : null;
+
+  return NextResponse.json({
+    item: {
+      id: row.id,
+      key: row.key,
+      currencyCode: code,
+      currencyName: name,
+      currencyBase: base,
+      currencyRateToKzt: row.currencyRateToKzt ?? null, // 1 CODE = X KZT
+      currencyProvider: row.currencyProvider ?? "exchangerate.host",
+      currencyUpdatedAt: row.currencyUpdatedAt?.toISOString?.() ?? null,
+    },
+  });
+}
+
+export const GET = withAudit("destinations.currency.get", _GET);
+
+/* ======================== POST ======================== */
+
+type CurrencyPayload = {
+  id?: string;
+  key?: string;
+  currencyCode?: string;       // ISO4217, напр. "AED"
+  currencyBase?: string;       // по умолчанию "KZT"
+  currencyRateToKzt?: number;
+  auto?: boolean;              // если true — тянем курс сами
+  provider?: "exchangerate.host";
+};
+
+async function fetchRateExchangerateHost(code: string): Promise<number | null> {
+  // Нам нужен курс: 1 CODE = X KZT
+  // У exchangerate.host: /latest?base=CODE&symbols=KZT → rates.KZT
+  const url = `https://api.exchangerate.host/latest?base=${encodeURIComponent(code)}&symbols=KZT`;
+  try {
+    const res = await fetch(url, { next: { revalidate: 0 }, cache: "no-store" });
+    if (!res.ok) return null;
+    const j = await res.json().catch(() => null) as any;
+    const rate = j?.rates?.KZT;
+    return Number.isFinite(rate) ? Number(rate) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function _POST(req: Request) {
+  await requireRole(["ADMIN", "EDITOR"]);
+
+  try {
+    const body = (await req.json()) as CurrencyPayload;
+
+    const id = asStrOrNull(body.id);
+    const key = asStrOrNull(body.key);
+
+    if (!id && !key) {
+      return NextResponse.json({ error: "id or key required" }, { status: 400 });
+    }
+
+    const code = normCode(body.currencyCode);
+    const base = normCode(body.currencyBase) ?? "KZT";
+    const provider = (body.provider ?? "exchangerate.host") as "exchangerate.host" | undefined;
+
+    if (!code) {
+      return NextResponse.json({ error: "Bad currencyCode (ISO4217, 3 letters)" }, { status: 400 });
+    }
+
+    let rate = asFloatOrNull(body.currencyRateToKzt);
+    if ((body.auto ?? false) || rate == null) {
+      // тянем свежий курс
+      if (base !== "KZT") {
+        // на данный момент поддерживаем только «к тенге»
+        return NextResponse.json({ error: "Only KZT base is supported for auto rate" }, { status: 400 });
+      }
+      rate = await fetchRateExchangerateHost(code);
+      if (rate == null) {
+        return NextResponse.json({ error: "Rate fetch failed" }, { status: 502 });
+      }
+    }
+
+    const updated = await prisma.destination.update({
+      where: id ? { id } : { key: key! },
+      data: {
+        currencyCode: code,
+        currencyBase: base,
+        currencyProvider: provider ?? "exchangerate.host",
+        currencyRateToKzt: rate!,
+        currencyUpdatedAt: new Date(),
+        basics: {
+          ...(typeof (await prisma.destination.findUnique({
+            where: id ? { id } : { key: key! },
+            select: { basics: true },
+          }))?.basics === "object"
+            ? (await prisma.destination.findUnique({
+                where: id ? { id } : { key: key! },
+                select: { basics: true },
+              }))!.basics as any
+            : {}),
+          currencyCode: code,
+          currencyPerKZT: rate!,
+        } as any,
+      },
+      select: { id: true },
+    });
+
+    invalidateDestinations();
+    return NextResponse.json({ ok: true, id: updated.id, rate });
+  } catch (e) {
+    console.error("currency.set error", e);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
+}
+
+export const POST = withAudit(
+  "destinations.currency.set",
+  _POST,
+  (_req, _ctx, payload) => ({ type: "Destination", id: payload?.id ?? null }),
+  "json",
+);
+#
+
+(src/app/api/destinations/admin/get/route.ts)
+#
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { requireRole } from "@/lib/require-auth";
+import { withAudit } from "@/lib/audit";
+
+export const dynamic = "force-dynamic";
+
+async function _GET(req: Request) {
+  await requireRole(["ADMIN", "EDITOR"]);
+
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+  const key = searchParams.get("key");
+
+  if (!id && !key) {
+    return NextResponse.json({ error: "id or key required" }, { status: 400 });
+  }
+
+  const row = id
+    ? await prisma.destination.findUnique({ where: { id } })
+    : await prisma.destination.findUnique({ where: { key: String(key) } });
+
+  if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  return NextResponse.json({
+    item: {
+      id: row.id,
+      key: row.key,
+      title: (row.title ?? { ru: "", kk: "", en: "" }) as { ru?: string; kk?: string; en?: string },
+      imageUrl: row.imageUrl ?? null,
+      isActive: row.isActive,
+      showOnHome: row.showOnHome,
+      sortOrder: row.sortOrder,
+
+      cities: row.cities ?? null,
+      priceFrom: row.priceFrom ?? null,
+      allowMinPrice: row.allowMinPrice ?? false,
+
+      descriptionHtml: row.descriptionHtml ?? null,
+      highlights: row.highlights ?? null,
+      facts: row.facts ?? null,
+      gallery: Array.isArray(row.gallery) ? row.gallery : [],
+      visaInfo: row.visaInfo ?? null,
+      safety: row.safety ?? null,
+      bestSeasons: Array.isArray(row.bestSeasons) ? row.bestSeasons : [],
+      mapEmbedUrl: row.mapEmbedUrl ?? null,
+    },
+  });
+}
+
+export const GET = withAudit("destinations.admin.get", _GET);
+#
+
+(src/app/api/destinations/admin/list/route.ts)
+#
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { withAudit } from "@/lib/audit";
+import { requireRole } from "@/lib/require-auth";
+
+export const dynamic = "force-dynamic";
+
+async function _GET() {
+  await requireRole(["ADMIN", "EDITOR"]);
+
+  const rows = await prisma.destination.findMany({
+    orderBy: { sortOrder: "asc" },
+    select: {
+      id: true,
+      key: true,
+      title: true,
+      imageUrl: true,
+      isActive: true,
+      showOnHome: true,
+      sortOrder: true,
+    },
+  });
+
+  const items = rows.map((r) => ({
+    id: r.id,
+    key: r.key,
+    title: (r.title ?? { ru: "", kk: "", en: "" }) as { ru?: string; kk?: string; en?: string },
+    imageUrl: r.imageUrl ?? null,
+    isActive: !!r.isActive,
+    showOnHome: !!r.showOnHome,
+    sortOrder: Number(r.sortOrder) || 0,
+  }));
+
+  return NextResponse.json({ items });
+}
+
+export const GET = withAudit("destinations.admin.list", _GET);
+#
+
+(src/app/api/destinations/bulk-save/route.ts)
+#
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { invalidateDestinations } from "@/lib/cms-cache";
+import { withAudit } from "@/lib/audit";
+import { requireRole } from "@/lib/require-auth";
+import { Prisma } from "@prisma/client";
+
+export const dynamic = "force-dynamic";
+
+/* ---------------- helpers ---------------- */
+
+const KEY_REGEX = /^[\p{L}\p{N}._-]+$/u;
+const normalizeKey = (raw: unknown) => String(raw ?? "").trim().toLowerCase().replace(/\s+/g, "-");
+const asIntOrNull = (v: unknown) => (Number.isFinite(Number(v)) ? Number(v) : null);
+const asStrOrNull = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
+const J = (v: unknown): Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput | undefined =>
+  v === undefined ? undefined : v === null ? Prisma.DbNull : (v as Prisma.InputJsonValue);
+
+const capActive = <T extends { isActive: boolean }>(arr: T[], cap = 90) => {
+  let n = 0;
+  return arr.map((x) => (x.isActive && n < cap ? ((n += 1), x) : { ...x, isActive: false }));
+};
+
+/* ---------------- handler ---------------- */
+
+async function _POST(req: Request) {
+  await requireRole(["ADMIN", "EDITOR"]);
+
+  try {
+    const body = await req.json();
+    const itemsRaw = body?.items;
+
+    if (!Array.isArray(itemsRaw)) {
+      return NextResponse.json({ error: "Invalid payload: items must be an array" }, { status: 400 });
+    }
+
+    const prepared = itemsRaw.map((it: any, idx: number) => {
+      const key = normalizeKey(it?.key);
+      if (!key) throw new Response(JSON.stringify({ error: `Bad key at index ${idx}: empty` }), { status: 400 });
+      if (!KEY_REGEX.test(key)) {
+        throw new Response(JSON.stringify({ error: `Bad key at index ${idx}: "${it?.key}" (only letters/numbers/._-)` }), { status: 400 });
+      }
+
+      return {
+        id: it?.id as string | undefined,
+        key,
+        title: {
+          ru: it?.title?.ru ?? "",
+          kk: it?.title?.kk ?? "",
+          en: it?.title?.en ?? "",
+        } as Prisma.InputJsonValue,
+        imageUrl: asStrOrNull(it?.imageUrl),
+        isActive: !!it?.isActive,
+        sortOrder: Number(it?.sortOrder ?? 0),
+
+        showOnHome: !!it?.showOnHome,
+        allowMinPrice: !!it?.allowMinPrice,
+        priceFrom: asIntOrNull(it?.priceFrom),
+        cities: J(it?.cities),
+
+        descriptionHtml: J(it?.descriptionHtml),
+        highlights: J(it?.highlights),
+        facts: J(it?.facts),
+        gallery: Array.isArray(it?.gallery) ? it.gallery.map(String).filter(Boolean) : [],
+        visaInfo: J(it?.visaInfo),
+        safety: J(it?.safety),
+        bestSeasons: Array.isArray(it?.bestSeasons) ? it.bestSeasons.map(String).filter(Boolean) : [],
+        mapEmbedUrl: asStrOrNull(it?.mapEmbedUrl),
+      };
+    });
+
+    const items = capActive(prepared, 90).sort((a, b) => a.sortOrder - b.sortOrder);
+
+    const ids: string[] = await prisma.$transaction(async (tx) => {
+      const out: string[] = [];
+
+      for (const it of items) {
+        if (it.id) {
+          const updated = await tx.destination.update({
+            where: { id: it.id },
+            data: {
+              key: it.key,
+              title: it.title,
+              imageUrl: it.imageUrl,
+              isActive: it.isActive,
+              sortOrder: it.sortOrder,
+              showOnHome: it.showOnHome,
+              allowMinPrice: it.allowMinPrice,
+              priceFrom: it.priceFrom,
+              cities: it.cities,
+              descriptionHtml: it.descriptionHtml,
+              highlights: it.highlights,
+              facts: it.facts,
+              gallery: it.gallery,
+              visaInfo: it.visaInfo,
+              safety: it.safety,
+              bestSeasons: it.bestSeasons,
+              mapEmbedUrl: it.mapEmbedUrl,
+            },
+            select: { id: true },
+          });
+          out.push(updated.id);
+        } else {
+          const existing = await tx.destination.findUnique({
+            where: { key: it.key },
+            select: { id: true },
+          });
+
+          if (existing) {
+            const updated = await tx.destination.update({
+              where: { id: existing.id },
+              data: {
+                key: it.key,
+                title: it.title,
+                imageUrl: it.imageUrl,
+                isActive: it.isActive,
+                sortOrder: it.sortOrder,
+                showOnHome: it.showOnHome,
+                allowMinPrice: it.allowMinPrice,
+                priceFrom: it.priceFrom,
+                cities: it.cities,
+                descriptionHtml: it.descriptionHtml,
+                highlights: it.highlights,
+                facts: it.facts,
+                gallery: it.gallery,
+                visaInfo: it.visaInfo,
+                safety: it.safety,
+                bestSeasons: it.bestSeasons,
+                mapEmbedUrl: it.mapEmbedUrl,
+              },
+              select: { id: true },
+            });
+            out.push(updated.id);
+          } else {
+            const created = await tx.destination.create({
+              data: {
+                key: it.key,
+                title: it.title,
+                imageUrl: it.imageUrl,
+                isActive: it.isActive,
+                sortOrder: it.sortOrder,
+                showOnHome: it.showOnHome,
+                allowMinPrice: it.allowMinPrice,
+                priceFrom: it.priceFrom,
+                cities: it.cities,
+                descriptionHtml: it.descriptionHtml,
+                highlights: it.highlights,
+                facts: it.facts,
+                gallery: it.gallery,
+                visaInfo: it.visaInfo,
+                safety: it.safety,
+                bestSeasons: it.bestSeasons,
+                mapEmbedUrl: it.mapEmbedUrl,
+              },
+              select: { id: true },
+            });
+            out.push(created.id);
+          }
+        }
+      }
+
+      return out;
+    });
+
+    invalidateDestinations();
+    return NextResponse.json({ ok: true, ids });
+  } catch (e: any) {
+    if (e instanceof Response) return e;
+    // Prisma known errors
+    if (e?.code === "P2002") {
+      return NextResponse.json({ error: "Key must be unique" }, { status: 409 });
+    }
+    console.error("destinations.bulk-save error", {
+      name: e?.name,
+      code: e?.code,
+      meta: e?.meta,
+      message: e?.message,
+    });
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
+}
+
+export const POST = withAudit(
+  "destinations.bulkSave",
+  _POST,
+  async () => ({ type: "Destination", id: null }),
+  "json",
+);
+
+export async function GET() {
+  return NextResponse.json({ error: "Method Not Allowed" }, { status: 405 });
+}
+#
+
+(src/app/api/destinations/delete/route.ts)
+#
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { invalidateDestinations } from "@/lib/cms-cache";
+import { withAudit } from "@/lib/audit";
+import { requireRole } from "@/lib/require-auth";
+
+export const dynamic = "force-dynamic";
+
+async function _POST(req: Request) {
+  await requireRole(["ADMIN", "EDITOR"]);
+
+  try {
+    const { id } = (await req.json()) as { id?: string };
+    if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+
+    await prisma.$transaction(async (tx) => {
+      await tx.destination.delete({ where: { id } });
+
+      const rest = await tx.destination.findMany({
+        orderBy: { sortOrder: "asc" },
+        select: { id: true },
+      });
+
+      await Promise.all(
+        rest.map((r, i) =>
+          tx.destination.update({
+            where: { id: r.id },
+            data: { sortOrder: i },
+          }),
+        ),
+      );
+    });
+
+    invalidateDestinations();
+    return NextResponse.json({ ok: true });
+  } catch (e: any) {
+    console.error("destinations.delete error", {
+      name: e?.name,
+      code: e?.code,
+      meta: e?.meta,
+      message: e?.message,
+    });
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
+}
+
+export const POST = withAudit(
+  "destinations.delete",
+  _POST,
+  (_req, _ctx, payload) => ({ type: "Destination", id: payload?.id ?? null }),
+  "json"
+);
+
+export async function GET() {
+  return NextResponse.json({ error: "Method Not Allowed" }, { status: 405 });
+}
+#
+
+(src/app/api/destinations/reorder/route.ts)
+#
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { invalidateDestinations } from "@/lib/cms-cache";
+import { withAudit } from "@/lib/audit";
+import { requireRole } from "@/lib/require-auth";
+
+export const dynamic = "force-dynamic";
+
+async function _POST(req: Request) {
+  await requireRole(["ADMIN", "EDITOR"]);
+
+  try {
+    const { ids } = (await req.json()) as { ids?: string[] };
+    if (!Array.isArray(ids)) {
+      return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    }
+
+    await prisma.$transaction(
+      ids.map((id, i) =>
+        prisma.destination.update({
+          where: { id },
+          data: { sortOrder: i },
+        }),
+      ),
+    );
+
+    invalidateDestinations();
+    return NextResponse.json({ ok: true });
+  } catch (e: any) {
+    console.error("destinations.reorder error", {
+      name: e?.name,
+      code: e?.code,
+      meta: e?.meta,
+      message: e?.message,
+    });
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
+}
+
+export const POST = withAudit(
+  "destinations.reorder",
+  _POST,
+  async () => ({ type: "Destination", id: null }),
+  "json",
+);
+
+export async function GET() {
+  return NextResponse.json({ error: "Method Not Allowed" }, { status: 405 });
+}
+#
+
+(src/app/api/destinations/save/route.ts)
+#
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { invalidateDestinations } from "@/lib/cms-cache";
+import { withAudit } from "@/lib/audit";
+import { requireRole } from "@/lib/require-auth";
+import { Prisma } from "@prisma/client";
+
+export const dynamic = "force-dynamic";
+
+const KEY_REGEX = /^[\p{L}\p{N}._-]+$/u;
+const normalizeKey = (raw: unknown) => String(raw ?? "").trim().toLowerCase().replace(/\s+/g, "-");
+
+const asIntOrNull = (v: unknown) => (Number.isFinite(Number(v)) ? Number(v) : null);
+const asStrOrNull = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
+const A = (v: unknown) => (Array.isArray(v) ? v.map(String).filter(Boolean) : []); // string[]
+const J = (v: unknown): Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput | undefined =>
+  v === undefined ? undefined : v === null ? Prisma.DbNull : (v as Prisma.InputJsonValue);
+
+async function _POST(req: Request) {
+  await requireRole(["ADMIN", "EDITOR"]);
+
+  try {
+    const body = await req.json();
+
+    const id: string | undefined = body?.id ? String(body.id) : undefined;
+    const key = normalizeKey(body?.key);
+    const title = body?.title;
+
+    if (!key || !title) return NextResponse.json({ ok: false, error: "Missing key/title" }, { status: 400 });
+    if (!KEY_REGEX.test(key)) return NextResponse.json({ ok: false, error: "Bad key (only letters/numbers/._-)" }, { status: 400 });
+    if (typeof title !== "object") return NextResponse.json({ ok: false, error: "title must be a localized object" }, { status: 400 });
+
+    // Новые поля (под твою форму)
+    const heroImages = A(body?.heroImages);
+    const basics = body?.basics ?? null;            // { timezones, capital, languages, currencyCode, currencyPerKZT }
+    const faqVisa = body?.faqVisa ?? null;          // L
+    const faqEntry = body?.faqEntry ?? null;        // LL
+    const faqReturn = body?.faqReturn ?? null;      // LL
+    const poi = body?.poi ?? null;                  // Array<{ title:L; imageUrl?:string; blurb?:L }>
+
+    // Старые поля оставляем для совместимости
+    const base = {
+      key,
+      title: title as Prisma.InputJsonValue,
+      imageUrl: asStrOrNull(body?.imageUrl),
+      isActive: !!body?.isActive,
+
+      priceFrom: asIntOrNull(body?.priceFrom),
+      allowMinPrice: !!body?.allowMinPrice,
+      showOnHome: !!body?.showOnHome,
+
+      cities: J(body?.cities),
+      descriptionHtml: J(body?.descriptionHtml),
+
+      // старые
+      highlights: J(body?.highlights),
+      facts: J(body?.facts),
+      gallery: A(body?.gallery),
+      visaInfo: J(body?.visaInfo),
+      safety: J(body?.safety),
+      bestSeasons: A(body?.bestSeasons),
+      mapEmbedUrl: asStrOrNull(body?.mapEmbedUrl),
+
+      // НОВЫЕ
+      heroImages,            // string[]
+      basics: J(basics),
+      faqVisa: J(faqVisa),
+      faqEntry: J(faqEntry),
+      faqReturn: J(faqReturn),
+      poi: J(poi),
+    };
+
+    const sortOrder = Number.isFinite(Number(body?.sortOrder)) ? Number(body.sortOrder) : undefined;
+
+    let savedId: string;
+
+    if (id) {
+      const updated = await prisma.destination.update({
+        where: { id },
+        data: {
+          key: base.key,
+          title: base.title,
+          imageUrl: base.imageUrl,
+          isActive: base.isActive,
+
+          priceFrom: base.priceFrom,
+          allowMinPrice: base.allowMinPrice,
+          showOnHome: base.showOnHome,
+
+          cities: base.cities,
+          descriptionHtml: base.descriptionHtml,
+
+          // старые
+          highlights: base.highlights,
+          facts: base.facts,
+          gallery: base.gallery,
+          visaInfo: base.visaInfo,
+          safety: base.safety,
+          bestSeasons: base.bestSeasons,
+          mapEmbedUrl: base.mapEmbedUrl,
+
+          // новые
+          heroImages: base.heroImages,
+          basics: base.basics,
+          faqVisa: base.faqVisa,
+          faqEntry: base.faqEntry,
+          faqReturn: base.faqReturn,
+          poi: base.poi,
+
+          ...(sortOrder !== undefined ? { sortOrder } : {}),
+        },
+        select: { id: true },
+      });
+      savedId = updated.id;
+    } else {
+      const exists = await prisma.destination.findUnique({ where: { key: base.key }, select: { id: true } });
+
+      if (exists) {
+        const updated = await prisma.destination.update({
+          where: { id: exists.id },
+          data: {
+            key: base.key,
+            title: base.title,
+            imageUrl: base.imageUrl,
+            isActive: base.isActive,
+
+            priceFrom: base.priceFrom,
+            allowMinPrice: base.allowMinPrice,
+            showOnHome: base.showOnHome,
+
+            cities: base.cities,
+            descriptionHtml: base.descriptionHtml,
+
+            // старые
+            highlights: base.highlights,
+            facts: base.facts,
+            gallery: base.gallery,
+            visaInfo: base.visaInfo,
+            safety: base.safety,
+            bestSeasons: base.bestSeasons,
+            mapEmbedUrl: base.mapEmbedUrl,
+
+            // новые
+            heroImages: base.heroImages,
+            basics: base.basics,
+            faqVisa: base.faqVisa,
+            faqEntry: base.faqEntry,
+            faqReturn: base.faqReturn,
+            poi: base.poi,
+
+            ...(sortOrder !== undefined ? { sortOrder } : {}),
+          },
+          select: { id: true },
+        });
+        savedId = updated.id;
+      } else {
+        const tail = await prisma.destination.count();
+        const createSortOrder = sortOrder ?? tail;
+
+        const created = await prisma.destination.create({
+          data: {
+            key: base.key,
+            title: base.title,
+            imageUrl: base.imageUrl,
+            isActive: base.isActive,
+            sortOrder: createSortOrder,
+
+            priceFrom: base.priceFrom,
+            allowMinPrice: base.allowMinPrice,
+            showOnHome: base.showOnHome,
+
+            cities: base.cities,
+            descriptionHtml: base.descriptionHtml,
+
+            // старые
+            highlights: base.highlights,
+            facts: base.facts,
+            gallery: base.gallery,
+            visaInfo: base.visaInfo,
+            safety: base.safety,
+            bestSeasons: base.bestSeasons,
+            mapEmbedUrl: base.mapEmbedUrl,
+
+            // новые
+            heroImages: base.heroImages,
+            basics: base.basics,
+            faqVisa: base.faqVisa,
+            faqEntry: base.faqEntry,
+            faqReturn: base.faqReturn,
+            poi: base.poi,
+          },
+          select: { id: true },
+        });
+        savedId = created.id;
+      }
+    }
+
+    invalidateDestinations();
+    return NextResponse.json({ ok: true, id: savedId });
+  } catch (e: any) {
+    if (e?.code === "P2002") {
+      return NextResponse.json({ ok: false, error: "Key must be unique" }, { status: 409 });
+    }
+    console.error("destinations.save error", { name: e?.name, code: e?.code, meta: e?.meta, message: e?.message });
+    return NextResponse.json({ ok: false, error: "Internal error" }, { status: 500 });
+  }
+}
+
+export const POST = withAudit(
+  "destinations.save",
+  _POST,
+  (_req, _ctx, payload) => ({ type: "Destination", id: payload?.id ?? null }),
+  "json"
+);
+
+export async function GET() {
+  return NextResponse.json({ error: "Method Not Allowed" }, { status: 405 });
+}
+#
+

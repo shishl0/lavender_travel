@@ -1,4 +1,3 @@
-// types/cms.ts
 export type Locale = "ru" | "kk" | "en";
 
 /** Локализуемая строка (в т.ч. HTML из редактора) */
@@ -8,41 +7,38 @@ export type LocalizedList = Record<Locale, (string[] | null)>;
 
 export type SiteSettingsDTO = {
   id: string;
+  isActive: boolean;
+
   // ===== Бренд / контакты =====
-  brand?: string | null;
-  tagline?: string | null;
+  brand?: string | null;           // brandName
+  tagline?: string | null;         // brandTagline
+  phoneNumber?: string | null;     // НОВОЕ
   whatsappNumber?: string | null;
   instagramUrl?: string | null;
 
   // ===== SEO / OG =====
-  title?: string | null;        // metaTitle
-  description?: string | null;  // metaDescription
+  title?: string | null;           // metaTitle
+  description?: string | null;     // metaDescription
   ogImageUrl?: string | null;
 
-  isActive: boolean;
-
-  // ===== UX =====
-  departureOptions?: string[] | null; // Алматы/Астана и т.п.
-
   // ===== Статы / опыт =====
-  statsMode?: "hidden" | "auto" | "shown";
-  statsAutoAtISO?: string | null;     // когда авто-включать блок
-  statsClients?: number | null;       // кол-во клиентов
-  statsRating?: number | null;        // ср.оценка /5
-  inTourismSinceISO?: string | null;  // “в туризме с …” (дата) — фронт сам считает мес/годы
+  statsMode?: "hidden" | "auto" | "shown" | string | null;
+  statsClients?: number | null;
+  statsRating?: number | null;
+  inTourismSinceISO?: string | null;
 
   // ===== Адрес / документы =====
-  address?: Localized | null;         // адрес (локализуемый)
-  certificateUrl?: string | null;     // PDF сертификат
+  address?: Localized | null;
+  certificateUrl?: string | null;
+  mapEmbedUrl?: string | null;     // НОВОЕ
 
-  // ===== Политики (rich text, храним HTML-строки по языкам) =====
-  privacyPolicy?: Localized | null;   // HTML
-  termsOfService?: Localized | null;  // HTML
+  // ===== Политики (rich HTML) =====
+  privacyPolicy?: Localized | null;
+  termsOfService?: Localized | null;
 
-  // ===== Минимальные цены (глобальные флаги) =====
-  pricingMinPriceEnabled?: boolean;   // галка “показывать минималку”
-  pricingMinPriceFormula?: string | null; // строка-формула/DSL (заглушка до алгоритма)
-  pricingMatrixUrl?: string | null;   // источник матрицы (позже подключим)
+  // ===== Политики (DOCX ссылки) =====
+  privacyPolicyDocUrls?: Partial<Record<Locale, string>> | null;   // НОВОЕ
+  termsOfServiceDocUrls?: Partial<Record<Locale, string>> | null;  // НОВОЕ
 };
 
 export type HeroDTO = {
@@ -55,12 +51,34 @@ export type HeroDTO = {
   titleBottom: Localized | null;
   subtitle: Localized | null;
 
-  // ⛔️ CTA больше не из CMS — берём из i18n
-  // ctaPrimary: Localized | null;
-  // ctaSecondary: Localized | null;
-
   imageUrl: string | null;
   imageAlt: Localized | null;
+};
+
+/* ===== Базовая инфа, климат и POI ===== */
+
+export type CountryBasics = {
+  timezones?: string[] | null;       // e.g. ["Asia/Dubai"]
+  capital?: Localized | null;        // локализуемое имя столицы
+  languages?: LocalizedList | null;  // локализуемые списки языков
+  currencyCode?: string | null;      // "AED", "TRY" и т.п.
+  currencyPerKZT?: number | null;    // курс: 1 валюта ≈ X KZT
+};
+
+export type ClimatePoint = {
+  year: number;
+  month: number;      // 1..12
+  airC?: number | null;
+  waterC?: number | null;
+  humidity?: number | null;  // %
+  uvIndex?: number | null;   // индекс UV
+  source?: string | null;
+};
+
+export type POICard = {
+  title: Localized;
+  imageUrl?: string | null;
+  blurb?: Localized | null;
 };
 
 export type DestinationDTO = {
@@ -71,8 +89,27 @@ export type DestinationDTO = {
   sortOrder: number;
   isActive: boolean;
 
-  cities?: LocalizedList | null;  // города по языкам
-  priceFrom?: number | null;      // опц. ручной “от … ₸” (до матрицы)
-  allowMinPrice: boolean;         // можно ли показывать минималку для этого направления
-  showOnHome: boolean;            // выводить в тизере на главной
+  cities?: LocalizedList | null;
+  priceFrom?: number | null;
+  allowMinPrice: boolean;
+  showOnHome: boolean;
+
+  descriptionHtml?: Localized | null;
+  highlights?: LocalizedList | null;
+  facts?: LocalizedList | null;
+  gallery?: string[] | null;
+  visaInfo?: Localized | null;
+  safety?: Localized | null;
+  bestSeasons?: string[] | null;
+  mapEmbedUrl?: string | null;
+
+  heroImages?: string[] | null;
+  basics?: CountryBasics | null;
+  poi?: POICard[] | null;
+  faqVisa?: Localized | null;
+  faqEntry?: Localized | null;
+  faqReturn?: Localized | null;
+
+  climate?: ClimatePoint[] | null;
+  climateBlended?: ClimatePoint[] | null;
 };

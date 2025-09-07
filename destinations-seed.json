@@ -1,0 +1,449 @@
+{
+  "items": [
+    {
+      "key": "turkey",
+      "title": { "ru": "Турция", "kk": "Түркия", "en": "Turkey" },
+      "imageUrl": "/uploads/destinations/turkey/cover.jpg",
+      "isActive": true,
+      "showOnHome": true,
+      "sortOrder": 0,
+
+      "cities": {
+        "ru": ["Анталья", "Алания", "Бодрум", "Кемер", "Сиде", "Стамбул"],
+        "kk": ["Анталья", "Алания", "Бодрум", "Кемер", "Сиде", "Стамбул"],
+        "en": ["Antalya", "Alanya", "Bodrum", "Kemer", "Side", "Istanbul"]
+      },
+      "priceFrom": 289000,
+      "allowMinPrice": true,
+
+      "descriptionHtml": {
+        "ru": "<p>Турция — удобные вылеты, отели на любой вкус, тёплое море и насыщенные экскурсии. Идеально для семьи и первой поездки.</p>",
+        "kk": "<p>Түркия — жайлы ұшулар, кез келген талғамға сай қонақүйлер, жылы теңіз және экскурсиялар.</p>",
+        "en": "<p>Turkey — easy flights, wide hotel choice, warm sea and rich excursions.</p>"
+      },
+      "highlights": {
+        "ru": ["Всё включено", "Семейные отели", "Мягкий климат", "Экскурсии в Памуккале и Каппадокию"],
+        "kk": ["Барлығы қосылған", "Отбасылық қонақүйлер", "Жұмсақ климат", "Памуккале мен Каппадокия экскурсиялары"],
+        "en": ["All inclusive", "Family hotels", "Mild climate", "Pamukkale & Cappadocia tours"]
+      },
+      "facts": {
+        "ru": ["Виза не требуется до 30 дней", "Лучшие месяцы: май–октябрь"],
+        "kk": ["30 күнге дейін виза қажет емес", "Ең жақсы айлар: мамыр–қазан"],
+        "en": ["Visa-free up to 30 days", "Best months: May–Oct"]
+      },
+      "gallery": [
+        "/uploads/destinations/turkey/1.jpg",
+        "/uploads/destinations/turkey/2.jpg",
+        "/uploads/destinations/turkey/3.jpg"
+      ],
+      "visaInfo": {
+        "ru": "<p>Для граждан РК — безвизовый въезд до 30 дней при наличии действующего паспорта.</p>",
+        "kk": "<p>ҚР азаматтарына — 30 күнге дейін визасыз кіру.</p>",
+        "en": "<p>Kazakhstan citizens: visa-free up to 30 days.</p>"
+      },
+      "safety": {
+        "ru": "<p>Курорты безопасны, соблюдайте обычные меры предосторожности.</p>",
+        "kk": "<p>Курорттар қауіпсіз, жалпы сақтық шараларын орындаңыз.</p>",
+        "en": "<p>Resorts are safe; follow standard precautions.</p>"
+      },
+      "bestSeasons": ["май–июнь", "сентябрь–октябрь"],
+      "mapEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!...turkey"
+    },
+
+    {
+      "key": "thailand",
+      "title": { "ru": "Таиланд", "kk": "Тайланд", "en": "Thailand" },
+      "imageUrl": "/uploads/destinations/thailand/cover.jpg",
+      "isActive": true,
+      "showOnHome": true,
+      "sortOrder": 1,
+
+      "cities": {
+        "ru": ["Пхукет", "Самуи", "Краби", "Паттайя", "Бангкок"],
+        "kk": ["Пхукет", "Самуи", "Краби", "Паттайя", "Бангкок"],
+        "en": ["Phuket", "Samui", "Krabi", "Pattaya", "Bangkok"]
+      },
+      "priceFrom": 399000,
+      "allowMinPrice": true,
+
+      "descriptionHtml": {
+        "ru": "<p>Тай — море, джунгли, уличная еда и улыбки. Выбор пляжей от спокойных до бодрых.</p>",
+        "kk": "<p>Тай — теңіз, джунгли, көше тағамы мен күлімсіреу елі.</p>",
+        "en": "<p>Thailand — beaches, jungles, street food and smiles.</p>"
+      },
+      "highlights": {
+        "ru": ["Тёплое море круглый год", "Экзотическая кухня", "Острова на любой вкус"],
+        "kk": ["Жылы теңіз жыл бойы", "Экзотикалық ас", "Таңдаулы аралдар"],
+        "en": ["Warm sea year-round", "Exotic food", "Islands for everyone"]
+      },
+      "facts": {
+        "ru": ["Электронная виза по прилёту", "Лучшие месяцы: ноябрь–март"],
+        "kk": ["Электронды виза мүмкін", "Ең жақсы: қараша–наурыз"],
+        "en": ["E-visa available", "Best: Nov–Mar"]
+      },
+      "gallery": [
+        "/uploads/destinations/thailand/1.jpg",
+        "/uploads/destinations/thailand/2.jpg",
+        "/uploads/destinations/thailand/3.jpg"
+      ],
+      "visaInfo": {
+        "ru": "<p>Для граждан РК часто действует безвиз/е-VOA — уточняйте по дате вылета.</p>",
+        "kk": "<p>ҚР азаматтары үшін жиі визасыз/е-VOA — ұшу күніне қарай нақтылаңыз.</p>",
+        "en": "<p>Often visa-free/e-VOA; check near your departure.</p>"
+      },
+      "safety": {
+        "ru": "<p>Популярные курорты безопасны, берегите документы и телефоны.</p>",
+        "kk": "<p>Танымал курорттар қауіпсіз, құжаттарды сақтаңыз.</p>",
+        "en": "<p>Popular resorts are safe; keep valuables secure.</p>"
+      },
+      "bestSeasons": ["ноябрь–март", "июль–август (Самуи)"],
+      "mapEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!...thailand"
+    },
+
+    {
+      "key": "uae",
+      "title": { "ru": "ОАЭ", "kk": "БАӘ", "en": "UAE" },
+      "imageUrl": "/uploads/destinations/uae/cover.jpg",
+      "isActive": true,
+      "showOnHome": true,
+      "sortOrder": 2,
+
+      "cities": {
+        "ru": ["Дубай", "Абу-Даби", "Шарджа", "Рас-Аль-Хайма", "Фуджейра"],
+        "kk": ["Дубай", "Абу-Даби", "Шарджа", "Рас-Аль-Хайма", "Фуджейра"],
+        "en": ["Dubai", "Abu Dhabi", "Sharjah", "Ras Al Khaimah", "Fujairah"]
+      },
+      "priceFrom": 259000,
+      "allowMinPrice": true,
+
+      "descriptionHtml": {
+        "ru": "<p>Современные мегаполисы, пляжи, шопинг и гастрономия. Идеально для коротких уик-эндов.</p>",
+        "kk": "<p>Қазіргі мегаполистер, жағажай, шопинг және гастрономия.</p>",
+        "en": "<p>Modern cities, beaches, shopping and dining.</p>"
+      },
+      "highlights": {
+        "ru": ["Быстые перелёты", "Пляжи и небоскрёбы", "Пустынные сафари"],
+        "kk": ["Жылдам ұшу", "Жағажай және аспанмен таласқан ғимараттар", "Шөл дала сафариі"],
+        "en": ["Short flights", "Beaches & skyscrapers", "Desert safari"]
+      },
+      "facts": {
+        "ru": ["Электронная виза при необходимости", "Лучшие месяцы: октябрь–апрель"],
+        "kk": ["Қажет болса электронды виза", "Ең жақсы: қазан–сәуір"],
+        "en": ["E-visa if needed", "Best: Oct–Apr"]
+      },
+      "gallery": [
+        "/uploads/destinations/uae/1.jpg",
+        "/uploads/destinations/uae/2.jpg",
+        "/uploads/destinations/uae/3.jpg"
+      ],
+      "visaInfo": {
+        "ru": "<p>Виза чаще всего электронная, сроки оформления 1–3 дня.</p>",
+        "kk": "<p>Көбіне электронды виза, рәсімдеу 1–3 күн.</p>",
+        "en": "<p>E-visa in 1–3 days commonly.</p>"
+      },
+      "safety": {
+        "ru": "<p>Очень высокий уровень безопасности.</p>",
+        "kk": "<p>Қауіпсіздік деңгейі өте жоғары.</p>",
+        "en": "<p>Very high safety level.</p>"
+      },
+      "bestSeasons": ["октябрь–апрель"],
+      "mapEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!...uae"
+    },
+
+    {
+      "key": "egypt",
+      "title": { "ru": "Египет", "kk": "Мысыр", "en": "Egypt" },
+      "imageUrl": "/uploads/destinations/egypt/cover.jpg",
+      "isActive": true,
+      "showOnHome": true,
+      "sortOrder": 3,
+
+      "cities": {
+        "ru": ["Хургада", "Шарм-эль-Шейх", "Марса-Алам"],
+        "kk": ["Хургада", "Шарм-эль-Шейх", "Марса-Алам"],
+        "en": ["Hurghada", "Sharm El Sheikh", "Marsa Alam"]
+      },
+      "priceFrom": 239000,
+      "allowMinPrice": true,
+
+      "descriptionHtml": {
+        "ru": "<p>Красное море с кораллами, дайвинг и понятный формат «всё включено».</p>",
+        "kk": "<p>Қызыл теңіз, маржандар, дайвинг және «бәрі қосылған».</p>",
+        "en": "<p>Red Sea corals, diving and easy all-inclusive.</p>"
+      },
+      "highlights": {
+        "ru": ["Коралловые рифы", "Ал-Инклюзив", "Экскурсии в Каир/Луксор"],
+        "kk": ["Маржан рифтері", "Алл инклюзив", "Каир/Луксор турлары"],
+        "en": ["Coral reefs", "All inclusive", "Cairo/Luxor tours"]
+      },
+      "facts": {
+        "ru": ["Виза в аэропорту", "Best: март–июнь, сентябрь–ноябрь"],
+        "kk": ["Әуежайда виза", "Ең жақсы: наурыз–маусым, қыркүйек–қараша"],
+        "en": ["Visa on arrival", "Best: Mar–Jun, Sep–Nov"]
+      },
+      "gallery": [
+        "/uploads/destinations/egypt/1.jpg",
+        "/uploads/destinations/egypt/2.jpg",
+        "/uploads/destinations/egypt/3.jpg"
+      ],
+      "visaInfo": {
+        "ru": "<p>Виза ставится по прилёту. Нужен загранпаспорт, ваучер отеля.</p>",
+        "kk": "<p>Виза келу кезінде беріледі.</p>",
+        "en": "<p>Visa on arrival; passport & hotel voucher required.</p>"
+      },
+      "safety": {
+        "ru": "<p>Курорты безопасны, внимательнее на экскурсиях.</p>",
+        "kk": "<p>Курорттар қауіпсіз, экскурсияларда мұқият болыңыз.</p>",
+        "en": "<p>Resorts are safe; be attentive on excursions.</p>"
+      },
+      "bestSeasons": ["март–июнь", "сентябрь–ноябрь"],
+      "mapEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!...egypt"
+    },
+
+    {
+      "key": "vietnam",
+      "title": { "ru": "Вьетнам", "kk": "Вьетнам", "en": "Vietnam" },
+      "imageUrl": "/uploads/destinations/vietnam/cover.jpg",
+      "isActive": true,
+      "showOnHome": true,
+      "sortOrder": 4,
+
+      "cities": {
+        "ru": ["Нячанг", "Фукуок", "Дананг", "Хойан", "Ханой", "Хошимин"],
+        "kk": ["Нячанг", "Фукуок", "Дананг", "Хойан", "Ханой", "Хошимин"],
+        "en": ["Nha Trang", "Phu Quoc", "Da Nang", "Hoi An", "Hanoi", "Ho Chi Minh"]
+      },
+      "priceFrom": 359000,
+      "allowMinPrice": true,
+
+      "descriptionHtml": {
+        "ru": "<p>Мягкий климат, чистые пляжи, вкусная кухня и выгодные цены.</p>",
+        "kk": "<p>Жұмсақ климат, таза жағажайлар, дәмді ас және тиімді бағалар.</p>",
+        "en": "<p>Mild climate, clean beaches, great food and value.</p>"
+      },
+      "highlights": {
+        "ru": ["Длинные пляжи", "Кофе и уличная еда", "Низкие цены"],
+        "kk": ["Ұзын жағажайлар", "Кофе және көше тағамдары", "Төмен бағалар"],
+        "en": ["Long beaches", "Coffee & street food", "Low prices"]
+      },
+      "facts": {
+        "ru": ["E-visa онлайн", "Лучшие месяцы зависят от региона"],
+        "kk": ["E-виза онлайн", "Ең жақсы айлар аймаққа байланысты"],
+        "en": ["E-visa online", "Best months vary by region"]
+      },
+      "gallery": [
+        "/uploads/destinations/vietnam/1.jpg",
+        "/uploads/destinations/vietnam/2.jpg",
+        "/uploads/destinations/vietnam/3.jpg"
+      ],
+      "visaInfo": {
+        "ru": "<p>Электронная виза оформляется онлайн за 3–5 дней.</p>",
+        "kk": "<p>Электронды виза 3–5 күнде рәсімделеді.</p>",
+        "en": "<p>E-visa in ~3–5 days.</p>"
+      },
+      "safety": {
+        "ru": "<p>Спокойная страна, как и везде — следите за вещами в туристических местах.</p>",
+        "kk": "<p>Ел тыныш, туристік аймақтарда заттарыңызды қадағалаңыз.</p>",
+        "en": "<p>Calm and safe; mind pickpockets in tourist areas.</p>"
+      },
+      "bestSeasons": ["январь–август (разнится по регионам)"],
+      "mapEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!...vietnam"
+    },
+
+    {
+      "key": "georgia",
+      "title": { "ru": "Грузия", "kk": "Грузия", "en": "Georgia" },
+      "imageUrl": "/uploads/destinations/georgia/cover.jpg",
+      "isActive": true,
+      "showOnHome": false,
+      "sortOrder": 5,
+
+      "cities": {
+        "ru": ["Тбилиси", "Батуми", "Кутаиси", "Кахети"],
+        "kk": ["Тбилиси", "Батуми", "Кутаиси", "Кахети"],
+        "en": ["Tbilisi", "Batumi", "Kutaisi", "Kakheti"]
+      },
+      "priceFrom": 279000,
+      "allowMinPrice": true,
+
+      "descriptionHtml": {
+        "ru": "<p>Вино, горы и невероятное гостеприимство. Хороша в любое время года.</p>",
+        "kk": "<p>Шарап, таулар және қонақжайлылық. Жылдың кез келген мезгілі.</p>",
+        "en": "<p>Wine, mountains and hospitality. Great year-round.</p>"
+      },
+      "highlights": {
+        "ru": ["Винные туры", "Горные пейзажи", "Доступные цены"],
+        "kk": ["Шарап турлары", "Тау көріністері", "Қолжетімді бағалар"],
+        "en": ["Wine tours", "Mountain views", "Affordable"]
+      },
+      "facts": {
+        "ru": ["Без визы", "Лучшие месяцы: апрель–октябрь"],
+        "kk": ["Визасыз", "Ең жақсы: сәуір–қазан"],
+        "en": ["Visa-free", "Best: Apr–Oct"]
+      },
+      "gallery": [
+        "/uploads/destinations/georgia/1.jpg",
+        "/uploads/destinations/georgia/2.jpg"
+      ],
+      "visaInfo": {
+        "ru": "<p>Безвизовый въезд для граждан РК.</p>",
+        "kk": "<p>ҚР азаматтары үшін визасыз кіру.</p>",
+        "en": "<p>Visa-free for KZ citizens.</p>"
+      },
+      "safety": {
+        "ru": "<p>Спокойно и дружелюбно.</p>",
+        "kk": "<p>Тыныш әрі достық ел.</p>",
+        "en": "<p>Calm and friendly.</p>"
+      },
+      "bestSeasons": ["апрель–октябрь"],
+      "mapEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!...georgia"
+    },
+
+    {
+      "key": "maldives",
+      "title": { "ru": "Мальдивы", "kk": "Мальдив аралдары", "en": "Maldives" },
+      "imageUrl": "/uploads/destinations/maldives/cover.jpg",
+      "isActive": true,
+      "showOnHome": false,
+      "sortOrder": 6,
+
+      "cities": {
+        "ru": ["Мале", "Атоллы Баа, Ари, Раа и др."],
+        "kk": ["Мале", "Баа, Ари, Раа атоллдары"],
+        "en": ["Male", "Baa, Ari, Raa Atolls"]
+      },
+      "priceFrom": 799000,
+      "allowMinPrice": false,
+
+      "descriptionHtml": {
+        "ru": "<p>Приватные острова, лагуны и идеальный пляжный отдых.</p>",
+        "kk": "<p>Жеке аралдар, лагуналар және мінсіз жағажай демалысы.</p>",
+        "en": "<p>Private islands, lagoons and perfect beach escape.</p>"
+      },
+      "highlights": {
+        "ru": ["Виллы над водой", "Снорклинг/дайвинг", "Уединение"],
+        "kk": ["Су үсті виллалары", "Снорклинг/дайвинг", "Жеке демалыс"],
+        "en": ["Overwater villas", "Snorkeling/diving", "Privacy"]
+      },
+      "facts": {
+        "ru": ["Виза по прибытии", "Лучшие месяцы: ноябрь–апрель"],
+        "kk": ["Келгенде виза", "Ең жақсы: қараша–сәуір"],
+        "en": ["Visa on arrival", "Best: Nov–Apr"]
+      },
+      "gallery": [
+        "/uploads/destinations/maldives/1.jpg",
+        "/uploads/destinations/maldives/2.jpg"
+      ],
+      "visaInfo": {
+        "ru": "<p>По прилёту ставят бесплатную визу на 30 дней.</p>",
+        "kk": "<p>Келгенде 30 күнге тегін виза беріледі.</p>",
+        "en": "<p>Free 30-day visa on arrival.</p>"
+      },
+      "safety": {
+        "ru": "<p>Очень спокойно, важно учитывать трансферы на гидросамолётах/лодках.</p>",
+        "kk": "<p>Өте тыныш, трансферлерге назар аударыңыз.</p>",
+        "en": "<p>Very calm; mind seaplane/boat transfers.</p>"
+      },
+      "bestSeasons": ["ноябрь–апрель"],
+      "mapEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!...maldives"
+    },
+
+    {
+      "key": "sri-lanka",
+      "title": { "ru": "Шри-Ланка", "kk": "Шри-Ланка", "en": "Sri Lanka" },
+      "imageUrl": "/uploads/destinations/sri-lanka/cover.jpg",
+      "isActive": true,
+      "showOnHome": false,
+      "sortOrder": 7,
+
+      "cities": {
+        "ru": ["Негомбо", "Бентота", "Мирисса", "Унаватуна", "Элла", "Канди"],
+        "kk": ["Негомбо", "Бентота", "Мирисса", "Унаватуна", "Элла", "Канди"],
+        "en": ["Negombo", "Bentota", "Mirissa", "Unawatuna", "Ella", "Kandy"]
+      },
+      "priceFrom": 369000,
+      "allowMinPrice": true,
+
+      "descriptionHtml": {
+        "ru": "<p>Пальмы, чайные плантации и океан — для тех, кто любит природу и атмосферу.</p>",
+        "kk": "<p>Пальмалар, шай плантациялары және мұхит — табиғатты сүйетіндерге.</p>",
+        "en": "<p>Palms, tea plantations and the ocean.</p>"
+      },
+      "highlights": {
+        "ru": ["Сафари в Яле", "Чайные плантации", "Сёрфинг"],
+        "kk": ["Яла сафариі", "Шай плантациялары", "Сёрфинг"],
+        "en": ["Yala safari", "Tea plantations", "Surfing"]
+      },
+      "facts": {
+        "ru": ["ETA онлайн", "Сезон разный по побережьям"],
+        "kk": ["ETA онлайн", "Маусым жағалауға байланысты"],
+        "en": ["ETA online", "Seasons vary by coast"]
+      },
+      "gallery": [
+        "/uploads/destinations/sri-lanka/1.jpg",
+        "/uploads/destinations/sri-lanka/2.jpg"
+      ],
+      "visaInfo": {
+        "ru": "<p>Оформление ETA на сайте, быстро и удобно.</p>",
+        "kk": "<p>ETA сайт арқылы рәсімделеді.</p>",
+        "en": "<p>ETA online; fast & easy.</p>"
+      },
+      "safety": {
+        "ru": "<p>Дружелюбно и спокойно.</p>",
+        "kk": "<p>Достық әрі тыныш.</p>",
+        "en": "<p>Friendly and calm.</p>"
+      },
+      "bestSeasons": ["декабрь–март (юго-запад)", "май–сентябрь (восток)"],
+      "mapEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!...srilanka"
+    },
+
+    {
+      "key": "bali",
+      "title": { "ru": "Индонезия (Бали)", "kk": "Индонезия (Бали)", "en": "Indonesia (Bali)" },
+      "imageUrl": "/uploads/destinations/bali/cover.jpg",
+      "isActive": true,
+      "showOnHome": false,
+      "sortOrder": 8,
+
+      "cities": {
+        "ru": ["Нуса-Дуа", "Семиняк", "Убуд", "Чангу", "Санур"],
+        "kk": ["Нуса-Дуа", "Семиняк", "Убуд", "Чангу", "Санур"],
+        "en": ["Nusa Dua", "Seminyak", "Ubud", "Canggu", "Sanur"]
+      },
+      "priceFrom": 449000,
+      "allowMinPrice": false,
+
+      "descriptionHtml": {
+        "ru": "<p>Остров храмов, рисовых террас и закатов. Убуд — для души, побережье — для отдыха.</p>",
+        "kk": "<p>Ғибадатханалар мен күріш террастарының аралы, керемет күн батуы.</p>",
+        "en": "<p>Island of temples, rice terraces and sunsets.</p>"
+      },
+      "highlights": {
+        "ru": ["Убуд и ритуалы", "Сёрфинг", "Авторские маршруты"],
+        "kk": ["Убуд және дәстүрлер", "Сёрфинг", "Авторлық бағыттар"],
+        "en": ["Ubud & rituals", "Surfing", "Custom trips"]
+      },
+      "facts": {
+        "ru": ["Виза по прибытии (VoA)", "Лучшие месяцы: май–октябрь"],
+        "kk": ["Келгенде виза", "Ең жақсы: мамыр–қазан"],
+        "en": ["Visa on arrival", "Best: May–Oct"]
+      },
+      "gallery": [
+        "/uploads/destinations/bali/1.jpg",
+        "/uploads/destinations/bali/2.jpg"
+      ],
+      "visaInfo": {
+        "ru": "<p>VoA по прилёту, оплата картой.</p>",
+        "kk": "<p>VoA — келу кезінде, картамен төлеу.</p>",
+        "en": "<p>VoA on arrival; card payment.</p>"
+      },
+      "safety": {
+        "ru": "<p>Спокойно, следите за скутерами и волной.</p>",
+        "kk": "<p>Тыныш, скутер мен толқынға сақ болыңыз.</p>",
+        "en": "<p>Calm; mind scooters and surf.</p>"
+      },
+      "bestSeasons": ["май–октябрь"],
+      "mapEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!...bali"
+    }
+  ]
+}

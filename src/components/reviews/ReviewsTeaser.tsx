@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import Lightbox from "./LightBox";
+import { useTranslation } from "react-i18next";
 
 /** Один отзыв */
 type Item = {
@@ -14,8 +14,7 @@ type Item = {
   created_at?: string | number;
 };
 
-
-// helpers (вверх файла)
+// ===== helpers: даты (raw→Date) =====
 function pickRawDate(r: any) {
   return (
     r.createdAt ?? r.created_at ?? r.created ?? r.date ??
@@ -35,19 +34,33 @@ function toDate(raw: any): Date | null {
   }
   return null;
 }
-function formatRuDate(raw: any) {
-  const d = toDate(raw);
-  if (!d) return "";
-  const now = new Date();
-  if (d.toDateString() === now.toDateString()) return "сегодня";
-  const y = new Date(now); y.setDate(now.getDate() - 1);
-  if (d.toDateString() === y.toDateString()) return "вчера";
-  const m = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"][d.getMonth()];
-  return `${d.getDate()} ${m} ${d.getFullYear()}`;
-}
-
 
 export default function ReviewsTeaser() {
+  const { t, i18n } = useTranslation();
+
+  // локализованный форматтер даты
+  const formatDate = useMemo(() => {
+    const months = (t("date.monthsShort", { returnObjects: true }) as string[]) || [];
+    const todayLabel = t("date.today", "сегодня");
+    const yesterdayLabel = t("date.yesterday", "вчера");
+
+    return (raw: any) => {
+      const d = toDate(raw);
+      if (!d) return "";
+      const now = new Date();
+
+      const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+      if (sameDay(d, now)) return todayLabel;
+
+      const y = new Date(now);
+      y.setDate(now.getDate() - 1);
+      if (sameDay(d, y)) return yesterdayLabel;
+
+      const m = months[d.getMonth()] ?? "";
+      return `${d.getDate()} ${m} ${d.getFullYear()}`;
+    };
+  }, [i18n.language, t]);
+
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -55,8 +68,8 @@ export default function ReviewsTeaser() {
   const [selected, setSelected] = useState<Item | null>(null);
   const [show, setShow] = useState(false);
 
-  /** Fullscreen просмотрщик фото */
-  const [viewer, setViewer] = useState<{ images: string[]; index: number } | null>(null);
+  /** Fullscreen просмотрщик фото (логика сохранена, UI не трогаем) */
+  const [, setViewer] = useState<{ images: string[]; index: number } | null>(null);
 
   const open = (r: Item) => { setSelected(r); requestAnimationFrame(() => setShow(true)); };
   const closeAnimated = () => { setShow(false); setTimeout(() => setSelected(null), 120); };
@@ -73,14 +86,38 @@ export default function ReviewsTeaser() {
     })();
   }, []);
 
+  const title = t("reviewsTeaser.title", "Отзывы клиентов");
+  const viewAll = t("reviewsTeaser.viewAll", "Смотреть все");
+  const viewAllAria = t("reviewsTeaser.viewAllAria", "Смотреть все отзывы");
+  const emptyText = t("reviewsTeaser.empty", "Отзывов пока нет — станьте первым!");
+  const leaveCta = t("reviewsTeaser.leaveCta", "Оставить отзыв");
+  const modalTitle = t("reviewsTeaser.modalTitle", "Отзыв");
+  const modalClose = t("reviewsTeaser.modalClose", "Закрыть");
+  const newBadge = t("reviewsTeaser.newBadge", "новое");
+
   return (
     <section className="teaser" aria-labelledby="reviewsTeaserTitle">
       <div className="teaser-head">
-        <h2 id="reviewsTeaserTitle" className="teaser-title">Отзывы клиентов</h2>
+        <h2 id="reviewsTeaserTitle" className="teaser-title">{title}</h2>
         <div className="teaser-actions">
-          <Link href="/reviews" className="btn btn-surface btn-sm btn-pill press group" aria-label="Смотреть все отзывы">
-            <span>Смотреть все</span>
-            <svg className="icon transition-transform duration-200 ease-out group-hover:translate-x-1" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <Link
+            href="/reviews"
+            className="btn btn-surface btn-sm btn-pill press group"
+            aria-label={viewAllAria}
+          >
+            <span>{viewAll}</span>
+            <svg
+              className="icon transition-transform duration-200 ease-out group-hover:translate-x-1"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="M5 12h14" /><path d="M13 5l7 7-7 7" />
             </svg>
           </Link>
@@ -94,10 +131,12 @@ export default function ReviewsTeaser() {
         {/* КОНТЕНТ */}
         {!loading && items.map((r) => {
           const cleanText = (r.text || "").replace(/^[\s★☆]+/g, "");
-          const dateLabel = formatRuDate(pickRawDate(r));
+          const dateLabel = formatDate(pickRawDate(r));
           const imgs = Array.isArray(r.images) ? r.images : [];
           const teaser = imgs.slice(0, 3);
           const rest = Math.max(0, imgs.length - teaser.length);
+
+          const openAria = t("reviewsTeaser.openAria", "Открыть отзыв: {{name}}", { name: r.name });
 
           return (
             <article
@@ -107,12 +146,12 @@ export default function ReviewsTeaser() {
               tabIndex={0}
               onClick={() => open(r)}
               onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && open(r)}
-              aria-label={`Открыть отзыв: ${r.name}`}
+              aria-label={openAria}
             >
               {/* шапка: имя + дата (справа тонкой капсулой) */}
               <div className="head justify-between">
                 <div className="name">{r.name}</div>
-                {dateLabel ? <div className="date">{dateLabel}</div> : <div className="date">новое</div>}
+                {dateLabel ? <div className="date">{dateLabel}</div> : <div className="date">{newBadge}</div>}
               </div>
 
               {/* звёзды */}
@@ -144,7 +183,7 @@ export default function ReviewsTeaser() {
         {/* ПУСТО */}
         {!loading && items.length === 0 && (
           <div className="review-card review-card--empty">
-            <div className="text">Отзывов пока нет — станьте первым!</div>
+            <div className="text">{emptyText}</div>
           </div>
         )}
       </div>
@@ -156,7 +195,7 @@ export default function ReviewsTeaser() {
           className="btn btn-primary btn-pill btn-lg press"
           onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent("open-review-modal")); }}
         >
-          Оставить отзыв
+          {leaveCta}
         </a>
       </div>
 
@@ -165,8 +204,8 @@ export default function ReviewsTeaser() {
         <div className="modal-backdrop" role="dialog" aria-modal="true" data-open={show ? 1 : 0} onClick={closeAnimated}>
           <div className="modal-sheet modal-sheet--review" data-open={show ? 1 : 0} onClick={(e) => e.stopPropagation()}>
             <div className="modal-head">
-              <div className="modal-title">Отзыв</div>
-              <button className="modal-close" onClick={closeAnimated} aria-label="Закрыть">✕</button>
+              <div className="modal-title">{modalTitle}</div>
+              <button className="modal-close" onClick={closeAnimated} aria-label={modalClose}>✕</button>
             </div>
 
             <div className="modal-body review-modal">

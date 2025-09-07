@@ -2,7 +2,6 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import I18nInit from "@/components/I18nInit";
-import Analytics from "@/components/Analytics";
 import ClientRoot from "@/components/ClientRoot";
 import { getActiveSettings } from "@/lib/cms-cache";
 
@@ -51,7 +50,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ru" suppressHydrationWarning>
       <body className="antialiased">
         <Suspense fallback={null}><I18nInit /></Suspense>
-        <Suspense fallback={null}><Analytics /></Suspense>
         <Suspense fallback={null}><ClientRoot /></Suspense>
         <Suspense fallback={null}>{children}</Suspense>
       </body>

@@ -8,21 +8,39 @@ export default async function DestinationsPage() {
     orderBy: { sortOrder: "asc" },
   });
 
-  const initial = rows.map((r) => ({
+  const toStrArr = (v: unknown): string[] => (Array.isArray(v) ? v.map(String) : []);
+
+  const list = rows.map((r) => ({
     id: r.id,
     key: r.key,
-    title: (r.title ?? { ru: "", kk: "", en: "" }) as {
-      ru?: string; kk?: string; en?: string;
-    },
-    imageUrl: r.imageUrl ?? "",
+    title: (r.title ?? { ru: "", kk: "", en: "" }) as { ru?: string; kk?: string; en?: string },
+    imageUrl: r.imageUrl ?? null,
     isActive: r.isActive,
+    showOnHome: r.showOnHome,
     sortOrder: r.sortOrder,
+
+    heroImages: toStrArr(r.heroImages ?? []),
+    basics: (r.basics ?? null) as any,
+    descriptionHtml: (r.descriptionHtml ?? null) as any,
+    cities: (r.cities ?? null) as any,
+
+    faqVisa: (r.faqVisa ?? null) as any,
+    faqEntry: (r.faqEntry ?? null) as any,
+    faqReturn: (r.faqReturn ?? null) as any,
+
+    poi: (r.poi ?? null) as any,
+
+    currencyCode: r.currencyCode ?? null,
+    currencyRateToKzt: r.currencyRateToKzt ?? null,
+    currencyBase: r.currencyBase ?? "KZT",
+    currencyProvider: r.currencyProvider ?? "exchangerate.host",
+    currencyUpdatedAt: r.currencyUpdatedAt ?? null,
   }));
 
   return (
     <div className="grid gap-6">
-      <div className="card p-5">
-        <DestinationsManager initial={initial} />
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <DestinationsManager list={list} />
       </div>
     </div>
   );

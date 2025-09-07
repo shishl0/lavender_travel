@@ -167,13 +167,6 @@ async function readIncomingFile(req: Request) {
 
 // ---------- POST ----------
 async function _POST(req: Request) {
-  // На Vercel/edge локальная запись недоступна
-  if (process.env.VERCEL) {
-    return NextResponse.json(
-      { ok: false, error: "Not supported on Vercel runtime" },
-      { status: 501 },
-    );
-  }
 
   // Роль пользователя
   const session = await getServerSession(authOptions).catch(() => null);
@@ -302,13 +295,6 @@ async function _POST(req: Request) {
 // ---------- DELETE (ADMIN/EDITOR) ----------
 async function _DELETE(req: Request) {
   await requireRole(["ADMIN", "EDITOR"]);
-
-  if (process.env.VERCEL) {
-    return NextResponse.json(
-      { ok: false, error: "Not supported on Vercel runtime" },
-      { status: 501 },
-    );
-  }
 
   try {
     const { url } = (await req.json().catch(() => ({}))) as { url?: string };

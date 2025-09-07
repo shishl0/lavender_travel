@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 
 type Item = {
   id: string;
@@ -21,13 +22,19 @@ function formatTengeNumber(v?: number | string): string | null {
 }
 
 export default function DestinationsTeaser({ items = [] as Item[] }) {
+  const { t } = useTranslation();
   if (!items?.length) return null;
+
+  const sectionTitle = t("teaser.destinations.title", "Популярные направления");
+  const viewAll = t("teaser.destinations.viewAll", "Смотреть все");
+  const viewAllAria = t("teaser.destinations.viewAllAria", "Смотреть все направления");
+  const pricePrefix = t("teaser.destinations.pricePrefix", "от");
 
   return (
     <section className="teaser" aria-labelledby="popularDestinationsTitle">
       <div className="teaser-head">
         <h2 id="popularDestinationsTitle" className="teaser-title">
-          Популярные направления
+          {sectionTitle}
         </h2>
 
         {/* Кнопка «Смотреть все» */}
@@ -35,9 +42,9 @@ export default function DestinationsTeaser({ items = [] as Item[] }) {
           <Link
             href="/destinations"
             className="btn btn-surface btn-sm btn-pill press group"
-            aria-label="Смотреть все направления"
+            aria-label={viewAllAria}
           >
-            <span>Смотреть все</span>
+            <span>{viewAll}</span>
             <svg
               className="icon transition-transform duration-200 ease-out group-hover:translate-x-1"
               width="18"
@@ -68,7 +75,11 @@ export default function DestinationsTeaser({ items = [] as Item[] }) {
               key={d.id}
               href={href}
               className="pop-card press"
-              aria-label={priceNum ? `${d.title} — от ${priceNum} тг` : d.title}
+              aria-label={
+                priceNum
+                  ? `${d.title} — ${pricePrefix} ${priceNum} тг`
+                  : d.title
+              }
             >
               {/* фон */}
               <img
@@ -84,7 +95,7 @@ export default function DestinationsTeaser({ items = [] as Item[] }) {
                 <div className="pop-title">{d.title}</div>
                 {priceNum && (
                   <div className="pop-price">
-                    <span className="muted">от</span> {priceNum}
+                    <span className="muted">{pricePrefix}</span> {priceNum}
                     <span className="tenge">₸</span>
                   </div>
                 )}

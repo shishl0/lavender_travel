@@ -49,34 +49,32 @@ model SiteSettings {
   id       String  @id @default(uuid())
   isActive Boolean @default(false)
 
-  // Бренд
   brandName    String
   brandTagline String?
 
-  // Мета
   metaTitle       String
   metaDescription String
   ogImageUrl      String?
 
-  // Контакты
+  phoneNumber    String?
   whatsappNumber String?
   instagramUrl   String?
 
-  statsClients   Int? // “сколько клиентов”
-  statsRating    Float? // средняя оценка /5
-  inTourismSince DateTime? // дата “в туризме с...”
-  statsMode      String? // 'shown' | 'hidden' | 'auto'
-  statsAutoAt    DateTime? // для режима 'auto'
+  statsClients   Int?
+  statsRating    Float?
+  inTourismSince DateTime?
+  statsMode      String?
 
-  address        Json? // локализуемо: {ru:"...", kk:"...", en:"..."}
-  certificateUrl String? // PDF (абсолютный/относительный URL)
+  address        Json?
+  certificateUrl String?
 
-  privacyPolicy  Json? // {ru: <rich>, kk:..., en:...}
-  termsOfService Json? // {ru: <rich>, kk:..., en:...}
+  privacyPolicy  Json?
+  termsOfService Json?
 
-  pricingMinPriceEnabled Boolean @default(false) // галка “показывать минималку”
-  pricingMinPriceFormula String? // формула/DSL (позже)
-  pricingMatrixUrl       String? // источник матрицы (позже)
+  privacyPolicyDocUrls  Json?
+  termsOfServiceDocUrls Json?
+
+  mapEmbedUrl String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -102,18 +100,64 @@ model Hero {
 
 // 3) Каталог направлений (макс. 8 активных — проверим в приложении)
 //    порядок карточек — через sortOrder (drag&drop)
+// prisma/schema.prisma
 model Destination {
-  id        String  @id @default(uuid())
-  key       String  @unique
-  title     Json
-  imageUrl  String?
-  isActive  Boolean @default(true)
-  sortOrder Int     @default(0)
+  id        String   @id @default(uuid())
+  key       String   @unique
+  title     Json                         // {ru?, kk?, en?}
+  isActive  Boolean  @default(true)
+  showOnHome Boolean @default(false)
+  sortOrder Int      @default(0)
 
-  cities        Json? // {ru:["Анталья","..."], kk:[...], en:[...]}
-  priceFrom     Int? // ручной “от … ₸” (если нужен)
-  allowMinPrice Boolean @default(false) // можно ли выводить минималку по этой стране
-  showOnHome    Boolean @default(false) // для тизеров/главной
+  // Витрина / карточка
+  imageUrl  String?                      // превьюшка для списка/шеринга
+
+  // Будем внедрять позже (оставляем, но выключим в коде)
+  /// priceFrom     Int?
+  /// allowMinPrice Boolean @default(false)
+
+  // Контент страницы
+  descriptionHtml Json?                  // {ru?, kk?, en?} — HTML
+  cities         Json?                   // {ru?:string[], kk?:string[], en?:string[]}
+
+  // Хиро/фон
+  heroImages     String[] @default([])   // до 10 изображений
+
+  // Базовая инфа
+  basics Json?                           // { timezones?:string[], capital?:{ru,kk,en}, languages?:{ru[],kk[],en[]}, currencyCode?:string, currencyPerKZT?:number }
+
+  // FAQ
+  faqVisa   Json?                        // {ru?, kk?, en?} — абзац
+  faqEntry  Json?                        // {ru?:string[], kk?:string[], en?:string[]}
+  faqReturn Json?                        // {ru?:string[], kk?:string[], en?:string[]}
+
+  // Достопримечательности (сторис)
+  poi Json?                              // Array<{ title:L, imageUrl?:string, blurb?:L }>
+
+  // Валюта (нужна currency API)
+  currencyCode       String?   @db.VarChar(3)
+  currencyRateToKzt  Float?
+  currencyBase       String?   @default("KZT") @db.VarChar(3)
+  currencyProvider   String?
+  currencyUpdatedAt  DateTime?
+
+  // Климат
+  climate   DestinationClimate?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DestinationClimate {
+  id             String      @id @default(uuid())
+  destinationId  String      @unique
+  destination    Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  source    String?
+  latitude  Float?
+  longitude Float?
+
+  months    Json
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

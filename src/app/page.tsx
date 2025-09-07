@@ -7,17 +7,34 @@ import Stats from "@/components/Stats";
 import ReviewsTeaser from "@/components/reviews/ReviewsTeaser";
 import AboutTeaser from "@/components/AboutTeaser";
 import Footer from "@/components/Footer";
-import WhatsAppFab from "@/components/WhatsAppFab";
 import SmoothScroll from "@/components/SmoothScroll";
 import ReviewModal from "@/components/reviews/ReviewModal";
 
+function ruYearsSuffix(n: number) {
+  const a = Math.abs(n) % 100;
+  const b = a % 10;
+  if (a > 10 && a < 20) return " лет";
+  if (b === 1) return " год";
+  if (b >= 2 && b <= 4) return " года";
+  return " лет";
+}
+
 function calcExperienceParts(sinceISO?: string | null) {
-  if (!sinceISO) return { value: null, suffix: "" as "" | " мес." | " лет" };
+  if (!sinceISO) return { value: undefined as number | undefined, suffix: "" as const };
+
   const since = new Date(sinceISO);
+  if (Number.isNaN(+since)) return { value: undefined, suffix: "" as const };
+
   const now = new Date();
-  const months = (now.getFullYear() - since.getFullYear()) * 12 + (now.getMonth() - since.getMonth());
-  if (months < 12) return { value: Math.max(0, months), suffix: " мес." as const };
-  return { value: Math.floor(months / 12), suffix: " лет" as const };
+  const months =
+    (now.getFullYear() - since.getFullYear()) * 12 +
+    (now.getMonth() - since.getMonth());
+
+  if (months < 12) {
+    return { value: Math.max(0, months), suffix: " мес." as const };
+  }
+  const years = Math.floor(months / 12);
+  return { value: years, suffix: ruYearsSuffix(years) as " год" | " года" | " лет" };
 }
 
 export default async function Page() {
@@ -26,8 +43,8 @@ export default async function Page() {
 
   // ====== НОВОЕ: совместимость полей ======
   // 1) Глобальный флаг минималки: поддерживаем старое settings.pricing.minPriceEnabled и новое settings.pricingMinPriceEnabled
-  const minPriceEnabled =
-    Boolean((settings as any)?.pricing?.minPriceEnabled ?? (settings as any)?.pricingMinPriceEnabled);
+  const minPriceEnabled = false
+    // Boolean((settings as any)?.pricing?.minPriceEnabled ?? (settings as any)?.pricingMinPriceEnabled);
 
   // 2) Режим статистики — без изменений
   const mode = (settings as any)?.statsMode ?? "shown";
@@ -56,7 +73,7 @@ export default async function Page() {
       priceFrom: minPriceEnabled && d.allowMinPrice
         ? (d.priceFrom ?? (DEV ? mockPrices[i % mockPrices.length] : undefined))
         : undefined,
-      href: `/destinations#${d.id}`,
+      href: `/destinations/${d.key}`,
     }));
 
   return (
@@ -64,31 +81,38 @@ export default async function Page() {
       <SmoothScroll />
       <Header settings={settings ?? null} />
       <main>
-        <Hero cms={hero ?? null} waDigits={waDigits} showMinPrice={minPriceEnabled} />
+        <Hero cms={hero ?? null} waDigits={waDigits} />
         {showStats && (
           <Stats
             overHero
             items={[
-              { icon: "users", label: "довольных клиентов", value: settings?.statsClients ?? null, suffix: (settings?.statsClients != null) ? "+" : "" },
-              { icon: "years", label: "в туризме",           value: yearsOrMonths, suffix },
-              { icon: "star",  label: "средняя оценка",      value: settings?.statsRating ?? null, suffix: (settings?.statsRating != null) ? "/5" : "" },
+              {
+                icon: "users",
+                label: "довольных клиентов",
+                value: settings?.statsClients ?? undefined,
+                suffix: settings?.statsClients != null ? "+" : "",
+              },
+              {
+                icon: "years",
+                label: "в туризме",
+                value: yearsOrMonths ?? undefined, // <-- undefined, не null
+                suffix,
+              },
+              {
+                icon: "star",
+                label: "средняя оценка",
+                value: settings?.statsRating ?? undefined,
+                suffix: settings?.statsRating != null ? "/5" : "",
+              },
             ]}
           />
         )}
 
         <DestinationsTeaser items={top4Raw} />
         <ReviewsTeaser />
-        <AboutTeaser
-          years={yearsOrMonths ?? undefined}
-          clients={settings?.statsClients ?? undefined}
-          instagram={settings?.instagramUrl || "https://www.instagram.com/lavender_travel_kz"}
-          // address — JSON с локалями, оставляем как есть
-          address={(settings as any)?.address?.ru}
-          certificateUrl={settings?.certificateUrl || undefined}
-        />
+        <AboutTeaser instagram={settings?.instagramUrl || "https://www.instagram.com/lavender_travel_kz"}/>
       </main>
       <Footer settings={settings ?? null} />
-      <WhatsAppFab phone={waDigits} />
       <ReviewModal />
     </>
   );

@@ -89,8 +89,6 @@ async function seedHero() {
         titleTop:    { ru: 'Путешествуй красиво', kk: 'Әдемі саяхатта', en: 'Travel beautifully' } as Prisma.InputJsonValue,
         titleBottom: { ru: 'с Lavender Travel', kk: 'Lavender Travel-мен', en: 'with Lavender Travel' } as Prisma.InputJsonValue,
         subtitle:    { ru: 'Авторские туры по миру, продуманные маршруты и забота 24/7. Минимум суеты — максимум впечатлений.', kk: 'Авторлық турлар, ойластырылған маршруттар және 24/7 қамқорлық. Аз әбігер — көп әсер.', en: 'Signature tours, thoughtful itineraries and 24/7 care. Less hassle — more memories.' } as Prisma.InputJsonValue,
-        ctaPrimary:  { ru: 'Выбрать тур', kk: 'Тур таңдау', en: 'Browse tours' } as Prisma.InputJsonValue,
-        ctaSecondary:{ ru: 'Связаться', kk: 'Жазу', en: 'Contact' } as Prisma.InputJsonValue,
         imageUrl:    '/images/hero.jpg',
         imageAlt:    { ru: 'Море и закат', kk: 'Теңіз бен күннің батуы', en: 'Sea and sunset' } as Prisma.InputJsonValue,
       },

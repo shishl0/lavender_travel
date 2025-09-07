@@ -10,7 +10,7 @@ async function _POST(req: Request) {
   await requireRole(["ADMIN", "EDITOR"]);
 
   try {
-    const { ids } = (await req.json()) as { ids: string[] };
+    const { ids } = (await req.json()) as { ids?: string[] };
     if (!Array.isArray(ids)) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
@@ -26,8 +26,13 @@ async function _POST(req: Request) {
 
     invalidateDestinations();
     return NextResponse.json({ ok: true });
-  } catch (e) {
-    console.error("reorder error", e);
+  } catch (e: any) {
+    console.error("destinations.reorder error", {
+      name: e?.name,
+      code: e?.code,
+      meta: e?.meta,
+      message: e?.message,
+    });
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

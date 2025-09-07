@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 export type StatItem = {
   icon: "users" | "globe" | "years" | "star";
   value?: string | number;
@@ -23,26 +25,55 @@ export default function Stats({
   overHero?: boolean;
   compact?: boolean;
 }) {
+  const { t } = useTranslation();
+
+  // Если items не передали — используем локализованные дефолты.
   const data: StatItem[] =
     items ?? [
-      { icon: "users", value: "1 200", suffix: "+", label: "довольных клиентов" },
-      { icon: "years", value: "7", suffix: " лет", label: "в туризме" },
-      { icon: "star", value: "4.8", suffix: "/5", label: "средняя оценка" },
+      {
+        icon: "users",
+        value: "1 200",
+        suffix: t("stats.defaults.clientsSuffix", "+"),
+        label: t("stats.defaults.clientsLabel", "довольных клиентов"),
+      },
+      {
+        icon: "years",
+        value: "7",
+        suffix: t("stats.defaults.yearsSuffix", " лет"),
+        label: t("stats.defaults.yearsLabel", "в туризме"),
+      },
+      {
+        icon: "star",
+        value: "4.8",
+        suffix: t("stats.defaults.ratingSuffix", "/5"),
+        label: t("stats.defaults.ratingLabel", "средняя оценка"),
+      },
     ];
 
   return (
     <section className={`stats ${overHero ? "stats--over-hero" : ""} ${compact ? "stats--compact" : ""}`}>
-      <div className="stats-wrap" role="list" aria-label="Ключевая статистика">
+      <div
+        className="stats-wrap"
+        role="list"
+        aria-label={t("stats.ariaList", "Ключевая статистика")}
+      >
         {data.map((s, i) => {
           const href = LINKS[s.icon] || "#";
           return (
-            <a className="stat-link" href={href} role="listitem" key={i} aria-label={`Перейти: ${s.label}`}>
+            <a
+              className="stat-link"
+              href={href}
+              role="listitem"
+              key={i}
+              aria-label={t("stats.goto", "Перейти: {{label}}", { label: s.label })}
+            >
               <div className="stat-icon" aria-hidden="true">
                 <Icon name={s.icon} />
               </div>
               <div className="stat-body">
                 <div className="stat-value">
-                  {s.value ?? ""}<span className="stat-suffix">{s.suffix ?? ""}</span>
+                  {s.value ?? ""}
+                  <span className="stat-suffix">{s.suffix ?? ""}</span>
                 </div>
                 <div className="stat-label">{s.label}</div>
               </div>
@@ -58,13 +89,13 @@ export default function Stats({
 function Icon({ name }: { name: "users" | "globe" | "years" | "star" }) {
   if (name === "users") {
     return (
-        <svg className="stat-svg" viewBox="0 0 24 24" aria-hidden="true">
+      <svg className="stat-svg" viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="12" cy="12" r="9" />
         <path d="M8 14c1.6 1.6 3.2 2.4 4 2.4s2.4-.8 4-2.4" />
         <path d="M9 10h.01M15 10h.01" />
-        </svg>
+      </svg>
     );
-    }
+  }
   if (name === "globe") {
     return (
       <svg className="stat-svg" viewBox="0 0 24 24" aria-hidden="true">

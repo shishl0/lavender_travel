@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import ImagesUploader from "@/components/reviews/ImagesUploader";
 
 export default function ReviewModal() {
+  const { t } = useTranslation();
+
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
 
@@ -55,7 +58,10 @@ export default function ReviewModal() {
     const textClean = text.trim();
     const imgs = (images || []).slice(0, 5);
 
-    if (!nameClean || !textClean) { setErr("Имя и текст обязательны"); return; }
+    if (!nameClean || !textClean) {
+      setErr(t("review.form.errors.required", "Имя и текст обязательны"));
+      return;
+    }
 
     setBusy(true);
     try {
@@ -67,19 +73,19 @@ export default function ReviewModal() {
           text: textClean,
           images: imgs,
           rating,
-          createdAt: Date.now(),          // ← добавили дату в тело
+          createdAt: Date.now(),
         }),
       });
       const j = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(j?.error || "Не удалось отправить");
+      if (!res.ok) throw new Error(j?.error || t("review.form.errors.submitFailed", "Не удалось отправить"));
 
-      setOk("Спасибо! Мы опубликуем отзыв после модерации.");
-      setTimeout(() => close(), 800);            // мягко закрыть
-      setTimeout(() => {                         // сбросить форму
+      setOk(t("review.form.success", "Спасибо! Мы опубликуем отзыв после модерации."));
+      setTimeout(() => close(), 800);
+      setTimeout(() => {
         setName(""); setText(""); setImages([]); setRating(5);
       }, 900);
     } catch (e) {
-      setErr((e as Error).message || "Ошибка отправки");
+      setErr((e as Error)?.message || t("review.form.errors.unknown", "Ошибка отправки"));
     } finally {
       setBusy(false);
     }
@@ -100,19 +106,26 @@ export default function ReviewModal() {
         data-open={show ? 1 : 0}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* единый заголовок */}
+        {/* Header */}
         <div className="modal-head">
-          <div className="modal-title">Оставить отзыв</div>
-          <button className="modal-close" onClick={close} aria-label="Закрыть">✕</button>
+          <div className="modal-title">{t("review.modal.title", "Оставить отзыв")}</div>
+          <button className="modal-close" onClick={close} aria-label={t("review.modal.close", "Закрыть")}>✕</button>
         </div>
 
         <div className="modal-body">
-          <form onSubmit={submit} className="review-form review-form--plain grid gap-4" aria-label="Форма отзыва">
+          <form onSubmit={submit} className="review-form review-form--plain grid gap-4" aria-label={t("review.form.aria", "Форма отзыва")}>
             {/* honeypot */}
-            <input className="hidden" tabIndex={-1} autoComplete="off" value={hp} onChange={(e) => setHp(e.target.value)} aria-hidden="true" />
+            <input
+              className="hidden"
+              tabIndex={-1}
+              autoComplete="off"
+              value={hp}
+              onChange={(e) => setHp(e.target.value)}
+              aria-hidden="true"
+            />
 
             <p className="review-form-subtitle">
-              Поделитесь впечатлениями — это поможет другим путешественникам.
+              {t("review.form.subtitle", "Поделитесь впечатлениями — это поможет другим путешественникам.")}
             </p>
 
             {(ok || err) && (
@@ -123,41 +136,43 @@ export default function ReviewModal() {
 
             <div className="grid gap-3 md:grid-cols-2">
               <div>
-                <label className="lbl">Имя *</label>
+                <label className="lbl">{t("review.form.nameLabel", "Имя *")}</label>
                 <input
                   className="inp"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   maxLength={120}
-                  placeholder="Как к вам обращаться"
+                  placeholder={t("review.form.namePlaceholder", "Как к вам обращаться")}
                   required
                 />
               </div>
 
               {/* Ровная линия «лейбл + звёзды» */}
               <div className="md:flex md:items-end md:justify-end">
-                <span className="lbl mr-2 whitespace-nowrap leading-none">Ваша оценка</span>
+                <span className="lbl mr-2 whitespace-nowrap leading-none">{t("review.form.ratingLabel", "Ваша оценка")}</span>
                 <StarPicker className="mt-0" value={rating} onChange={setRating} />
               </div>
             </div>
 
             <div>
-              <label className="lbl">Текст отзыва *</label>
+              <label className="lbl">{t("review.form.textLabel", "Текст отзыва *")}</label>
               <textarea
                 className="inp h-32"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 maxLength={2000}
-                placeholder="Что понравилось, как всё прошло…"
+                placeholder={t("review.form.textPlaceholder", "Что понравилось, как всё прошло…")}
                 required
               />
               <div className="mt-1 hint">{text.length}/2000</div>
             </div>
 
             <div className="uploader">
-              <div className="lbl mb-2">Фото (до 5)</div>
+              <div className="lbl mb-2">{t("review.form.photosLabel", "Фото (до 5)")}</div>
               <ImagesUploader images={images} onChange={setImages} max={5} disabled={busy} />
-              <div className="mt-2 hint">PNG, JPG, WebP, HEIC/HEIF — мы сами конвертируем, если нужно. Макс. 5 МБ/файл.</div>
+              <div className="mt-2 hint">
+                {t("review.form.photosHint", "PNG, JPG, WebP, HEIC/HEIF — мы сами конвертируем, если нужно. Макс. 5 МБ/файл.")}
+              </div>
             </div>
 
             <div className="mt-2">
@@ -166,7 +181,7 @@ export default function ReviewModal() {
                 className={`btn btn-primary btn-lg btn-pill w-full press ${busy ? "is-loading" : ""}`}
                 disabled={busy}
               >
-                Отправить отзыв
+                {t("review.form.submit", "Отправить отзыв")}
               </button>
             </div>
           </form>
@@ -186,6 +201,7 @@ function StarPicker({
   onChange: (v: number) => void;
   className?: string;
 }) {
+  const { t } = useTranslation();
   const [hover, setHover] = useState<number | null>(null);
   const show = hover ?? value;
   return (
@@ -200,7 +216,7 @@ function StarPicker({
             onClick={() => onChange(n)}
             onMouseEnter={() => setHover(n)}
             onMouseLeave={() => setHover(null)}
-            aria-label={`${n} из 5`}
+            aria-label={t("review.form.starAria", "{{n}} из 5", { n })}
             className="w-8 h-8 grid place-items-center rounded-md hover:bg-gray-50 press"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">

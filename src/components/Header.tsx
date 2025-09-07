@@ -82,7 +82,14 @@ export default function Header({ settings }: { settings: SiteSettingsDTO | null 
         </nav>
 
         {/* Бургер */}
-        <button onClick={() => setOpen(v => !v)} className="burger" aria-label="Меню">☰</button>
+        <button
+          onClick={() => setOpen(v => !v)}
+          className="burger"
+          aria-label={t("nav.menu", "Меню")}
+          title={t("nav.menu", "Меню")}
+          >
+          ☰
+        </button>
       </div>
 
       {/* Мобильное меню */}

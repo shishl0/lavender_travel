@@ -673,7 +673,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible{
 
 /* Сетка */
 .why-grid{
-  --why-h: 160px;               /* базовая одинаковая высота */
+  --why-h: 200px;               /* базовая одинаковая высота */
   margin-top: 2rem;
   display:grid;
   gap: .9rem;
@@ -681,10 +681,10 @@ input:focus-visible, textarea:focus-visible, select:focus-visible{
   align-items: stretch;
 }
 @media (min-width:640px){ .why-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
-@media (min-width:1024px){ .why-grid{ grid-template-columns: repeat(4, minmax(0,1fr)); --why-h: 160px; } }
+@media (min-width:1024px){ .why-grid{ grid-template-columns: repeat(4, minmax(0,1fr)); --why-h: 200px; } }
 
 /* Карточка */
-.why-card{ height: var(--why-h); border-radius:18px; outline:none; }
+.why-card{ height: var(--why-h); min-height:200px; border-radius:18px; outline:none; }
 .why-border{
   height: 100%; padding:1px; border-radius:inherit;
   background: linear-gradient(135deg, #9C79E2 0%, #7B4DBB 48%, #5E3BB7 100%);
@@ -1166,7 +1166,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible{
 .city-li--country{ border-style:dashed; margin-bottom:.4rem; }
 
 /* календарь (2 месяца) */
-.cal-row{}
 .cal-nav{ display:flex; gap:.4rem; justify-content:flex-end; margin-bottom:.4rem; }
 .cal-months{ display:grid; grid-template-columns: 1fr 1fr; gap:.6rem; }
 @media (max-width:639.98px){ .cal-months{ grid-template-columns: 1fr; } }
@@ -1279,4 +1278,19 @@ input:focus-visible, textarea:focus-visible, select:focus-visible{
 .search-submit--accent:focus-visible{
   outline:none;
   box-shadow: 0 0 0 4px rgba(123,77,187,.18), var(--shadow-sm);
+}
+
+
+/* === destination hero animations === */
+@keyframes heroIn {
+  from { transform: scale(1.12); filter: saturate(0.9) blur(1px); }
+  to   { transform: scale(1.00); filter: saturate(1) blur(0px); }
+}
+
+@keyframes fadeSlide {
+  0% { opacity: 1; }
+  30% { opacity: 1; }
+  40% { opacity: 0; }
+  90% { opacity: 0; }
+  100% { opacity: 1; }
 }

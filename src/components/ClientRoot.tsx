@@ -2,11 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useCaptureUtm } from "@/hooks/useCaptureUtm";
 import { track } from "@/lib/track";
 
 export default function ClientRoot() {
-  useCaptureUtm();
 
   const pathname = usePathname();
   const search = useSearchParams();
