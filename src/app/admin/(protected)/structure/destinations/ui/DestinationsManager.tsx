@@ -597,7 +597,8 @@ const DestinationForm = memo(function DestinationForm(props: {
             />
           </div>
 
-          <div className="grid gap-1.5">
+          <div className="grid md:grid-cols-2">
+            <div className="grid gap-1.5">
             <label className={label}>Активно</label>
             <div className="flex gap-2">
               <button
@@ -621,6 +622,32 @@ const DestinationForm = memo(function DestinationForm(props: {
                 Нет
               </button>
             </div>
+          </div>
+          <div className="grid gap-1.5">
+            <label className={label}>На главной</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => set({ showOnHome: true })}
+                className={[
+                  "px-3 h-9 rounded-xl border text-sm",
+                  f.showOnHome ? "border-violet-300 bg-violet-50 text-violet-700" : "border-slate-200",
+                ].join(" ")}
+              >
+                Да
+              </button>
+              <button
+                type="button"
+                onClick={() => set({ showOnHome: false })}
+                className={[
+                  "px-3 h-9 rounded-xl border text-sm",
+                  !f.showOnHome ? "border-violet-300 bg-violet-50 text-violet-700" : "border-slate-200",
+                ].join(" ")}
+              >
+                Нет
+              </button>
+            </div>
+          </div>
           </div>
 
           {(["ru", "kk", "en"] as Array<keyof L>).map((code) => (

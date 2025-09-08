@@ -22,9 +22,13 @@ if (!i18n.isInitialized) {
       fallbackLng: 'ru',
       supportedLngs: ['ru', 'kk', 'en'],
       detection: {
-        order: ['localStorage', 'navigator'],
-        caches: ['localStorage'],
+        order: ['cookie', 'localStorage', 'navigator'],
+        caches: ['cookie', 'localStorage'],
+
+        lookupCookie: 'i18nextLng',
         lookupLocalStorage: 'i18nextLng',
+
+        cookieMinutes: 60 * 24 * 365,
       },
       interpolation: { escapeValue: false },
       returnEmptyString: false,

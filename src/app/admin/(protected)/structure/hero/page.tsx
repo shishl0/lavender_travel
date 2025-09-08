@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import HeroManager from "./ui/HeroManager";
 
 export const revalidate = 0;
 
@@ -14,5 +15,3 @@ export default async function HeroPage() {
     </div>
   );
 }
-
-import HeroManager from "./ui/HeroManager";

@@ -19,7 +19,7 @@ tmp
 tmp/**
 
 # local uploads (dev only)
-public/uploads/
+# public/uploads/
 
 # vercel local state
 .vercel

@@ -1,38 +1,72 @@
 "use client";
 
-type L = { ru: string; kk: string; en: string };
+import Image from "next/image";
+
+export type Lang = "ru" | "kk" | "en";
+
+type L = Partial<Record<Lang, string>>;
 type Data = {
-  kicker: L; titleTop: L; titleBottom: L; subtitle: L;
-  ctaPrimary: L; ctaSecondary: L;
-  imageUrl: string | null; imageAlt: L;
+  kicker: L;
+  titleTop: L;
+  titleBottom: L;
+  subtitle: L;
+  imageUrl: string | null;
+  imageAlt: L;
 };
 
-export default function HeroPreview({ data, lang }: { data: Data; lang: keyof L }) {
-  const t = (l: L) => l?.[lang] || l?.ru || l?.en || l?.kk || "";
+function t(l: L, lang: Lang): string {
+  return l?.[lang] ?? l?.ru ?? l?.en ?? l?.kk ?? "";
+}
 
+export default function HeroPreview({
+  data,
+  lang,
+}: {
+  data: Data;
+  lang: Lang;
+}) {
   return (
-    <div className="rounded-xl border p-5 bg-gradient-to-br from-white to-[#faf7ff]">
-      <div className="text-sm text-[#5e3bb7] font-semibold">{t(data.kicker)}</div>
-      <div className="mt-1 text-2xl font-bold">{t(data.titleTop)}</div>
-      <div className="text-2xl font-bold" style={{ color: "#5e3bb7" }}>{t(data.titleBottom)}</div>
-      <div className="mt-2 text-gray-600">{t(data.subtitle)}</div>
-
-      <div className="mt-4 flex items-center gap-2">
-        <button className="btn-primary press">{t(data.ctaPrimary) || "CTA Primary"}</button>
-        <button className="btn-ghost press">{t(data.ctaSecondary) || "CTA Secondary"}</button>
+    <section className="hero hero--full relative overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
+      {/* Фоновое изображение */}
+      <div className="hero-bg absolute inset-0">
+        {data.imageUrl ? (
+          <Image
+            src={data.imageUrl}
+            alt={t(data.imageAlt, lang) || "Hero background"}
+            fill
+            className="object-cover"
+            sizes="100vw"
+          />
+        ) : (
+          <div className="absolute inset-0 grid place-items-center bg-slate-100 text-slate-400 text-sm">
+            Нет изображения
+          </div>
+        )}
       </div>
 
-      {data.imageUrl ? (
-        <img
-          src={data.imageUrl}
-          alt={t(data.imageAlt) || "image"}
-          className="mt-4 rounded-lg border max-h-64 object-cover w-full"
-        />
-      ) : (
-        <div className="mt-4 h-40 rounded-lg border grid place-items-center text-sm text-gray-400">
-          Нет изображения
+      {/* Оверлей затемнения */}
+      <div className="hero-overlay absolute inset-0 bg-black/40" />
+
+      {/* Контент */}
+      <div className="hero-content relative z-10 py-16 md:py-24">
+        <div className="container">
+          <div className="kicker text-sm font-semibold uppercase tracking-wider text-violet-200">
+            {t(data.kicker, lang)}
+          </div>
+
+          <h1 className="hero-title hero-title--onimg mt-3 text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight text-white drop-shadow-md">
+            {t(data.titleTop, lang)} <br /> {t(data.titleBottom, lang)}
+          </h1>
+
+          <p className="mt-5 text-lg md:text-xl lg:text-2xl text-white/90 max-w-2xl">
+            {t(data.subtitle, lang)}
+          </p>
+
+          <div className="mt-6 flex items-center gap-3">
+            <button className="btn btn-primary press">Выбрать тур</button>
+          </div>
         </div>
-      )}
-    </div>
+      </div>
+    </section>
   );
 }

@@ -9,9 +9,9 @@ type HeroRec = {
   id: string;
   isActive: boolean;
   kicker: L; titleTop: L; titleBottom: L; subtitle: L;
-  ctaPrimary: L; ctaSecondary: L;
+  ctaPrimary: L; ctaSecondary: L;           // оставляем в типе для совместимости API/БД
   imageUrl: string | null;
-  imageAlt: L;
+  imageAlt: L;                               // оставляем в типе для совместимости API/БД
 };
 
 const emptyL = (): L => ({ ru: "", kk: "", en: "" });
@@ -65,7 +65,7 @@ export default function HeroManager({
 
   const [lang, setLang] = useState<keyof L>("ru");
   const [busy, setBusy] = useState<null | "save" | "upload" | "activate" | "delete">(null);
-  const [pending, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   function selectProfile(id: string) {
     setSelectedId(id);
@@ -203,151 +203,181 @@ export default function HeroManager({
   }
 
   return (
-    <div className="grid md:grid-cols-[380px_1fr] gap-6">
-      {/* левая колонка — список профилей */}
-      <aside className="card p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold">Профили</h3>
-          <button className="btn-ghost press" onClick={newProfile} disabled={!!busy || pending}>
-            + Новый
-          </button>
+    <div className="grid md:grid-cols-[minmax(0,1fr)_380px] gap-6">
+      {/* Левая колонка — форма (как в SiteSettings) */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold">Hero</h2>
+          <p className="text-xs text-slate-500">Заголовки, сабтайтл и изображение</p>
         </div>
 
-        <ul className="space-y-2">
-          {list.map((h) => {
-            const active = h.isActive;
-            const current = h.id === selectedId;
-            return (
-              <li
-                key={h.id}
-                className={[
-                  "rounded-lg border p-3 hover:bg-gray-50 transition",
-                  current ? "ring-1 ring-[#5e3bb7] bg-[#f7f4ff]" : "",
-                ].join(" ")}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <button className="text-left min-w-0" onClick={() => selectProfile(h.id)}>
-                    <div className="font-medium truncate">
-                      {h.titleTop?.ru || h.titleTop?.kk || h.titleTop?.en || "Без названия"}
-                    </div>
-                    <div className="text-xs text-gray-500 truncate">обновлён</div>
-                  </button>
-                  <div className="flex items-center gap-2">
-                    {active ? (
-                      <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-green-50 text-green-700 border border-green-200">
-                        ✅ Активно
-                      </span>
-                    ) : (
-                      <button
-                        className="text-xs px-2 py-1 rounded-md border hover:bg-gray-50 press disabled:opacity-60"
-                        disabled={!!busy || pending}
-                        onClick={() => makeActive(h.id)}
-                      >
-                        Сделать активным
-                      </button>
-                    )}
-                    <button
-                      onClick={() => remove(h.id)}
-                      disabled={!!busy || pending || active}
-                      className="h-9 w-9 grid place-items-center rounded-lg text-rose-600 hover:bg-rose-50 press disabled:opacity-60"
-                      title={active ? "Нельзя удалить активный" : "Удалить"}
-                      >
-                      <b>x</b>
-                    </button>
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </aside>
+        {/* Переключатель языков */}
+        <div className="mb-4 flex items-center gap-2">
+          {(["ru", "kk", "en"] as (keyof L)[]).map((code) => (
+            <button
+              key={code}
+              className={[
+                "px-2 py-1 rounded-md border text-xs press",
+                lang === code ? "bg-[#f0ecfb] text-[#5e3bb7] border-[#dcd0ff]" : "hover:bg-gray-50",
+              ].join(" ")}
+              onClick={() => setLang(code)}
+            >
+              {code.toUpperCase()}
+            </button>
+          ))}
+        </div>
 
-      {/* правая колонка — форма + превью */}
-      <section className="grid lg:grid-cols-2 gap-6">
-        <div className="card p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold">Редактирование</h3>
+        {/* Поля локализации — оставили только нужные */}
+        <div className="grid gap-3">
+          {(
+            [
+              ["kicker", "Kicker"] as const,
+              ["titleTop", "Title (top)"] as const,
+              ["titleBottom", "Title (bottom)"] as const,
+              ["subtitle", "Subtitle"] as const,
+            ] satisfies Array<[keyof HeroRec, string]>
+          ).map(([field, label]) => (
+            <div key={field} className="grid gap-1">
+              <label className="text-sm">
+                {label} ({lang.toUpperCase()})
+              </label>
+              <input
+                className="h-[40px] w-full rounded-xl border border-slate-200 bg-white px-3 text-[15px] leading-[1.2] outline-none focus:ring-2 focus:ring-violet-200"
+                value={(form[field] as L)[lang]}
+                onChange={(e) => setL(field, lang, e.target.value)}
+                placeholder={label}
+              />
+            </div>
+          ))}
+
+          {/* Блок изображения — только загрузка файла, без текстового инпута URL */}
+          <div className="grid gap-1">
+            <label className="text-sm">Изображение</label>
             <div className="flex items-center gap-2">
-              {(["ru", "kk", "en"] as (keyof L)[]).map((code) => (
-                <button
-                  key={code}
-                  className={[
-                    "px-2 py-1 rounded-md border text-xs press",
-                    lang === code ? "bg-[#f0ecfb] text-[#5e3bb7] border-[#dcd0ff]" : "hover:bg-gray-50",
-                  ].join(" ")}
-                  onClick={() => setLang(code)}
-                >
-                  {code.toUpperCase()}
-                </button>
-              ))}
+              <label className="h-[60px] w-30 rounded-xl border border-slate-200 bg-white px-3 py-3 text-[15px] leading-[1.2] outline-none focus:ring-2 focus:ring-violet-200 cursor-pointer press">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) uploadImage(f);
+                  }}
+                />
+                {busy === "upload" ? "Загрузка…" : "Загрузить файл"}
+              </label>
+              {form.imageUrl && (
+                <span className="text-xs text-slate-500 truncate">
+                  {form.imageUrl.split("/").pop()}
+                </span>
+              )}
             </div>
+
+            {form.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={form.imageUrl} alt="preview" className="mt-2 max-h-40 rounded-lg border" />
+            ) : (
+              <div className="mt-2 h-24 rounded-lg border grid place-items-center text-xs text-slate-400">
+                Файл не выбран
+              </div>
+            )}
           </div>
 
-          <div className="grid gap-3">
-            {(
-              [
-                ["kicker", "Kicker"] as const,
-                ["titleTop", "Title (top)"] as const,
-                ["titleBottom", "Title (bottom)"] as const,
-                ["subtitle", "Subtitle"] as const,
-                ["ctaPrimary", "CTA Primary"] as const,
-                ["ctaSecondary", "CTA Secondary"] as const,
-                ["imageAlt", "Image Alt"] as const,
-              ] satisfies Array<[keyof HeroRec, string]>
-            ).map(([field, label]) => (
-              <div key={field} className="grid gap-1">
-                <label className="text-sm">
-                  {label} ({lang.toUpperCase()})
-                </label>
-                <input
-                  className="border rounded-lg px-3 py-2"
-                  value={(form[field] as L)[lang]}
-                  onChange={(e) => setL(field, lang, e.target.value)}
-                  placeholder={label}
-                />
-              </div>
-            ))}
-
-            <div className="grid gap-1">
-              <label className="text-sm">Image URL</label>
-              <div className="flex items-center gap-2">
-                <input
-                  className="border rounded-lg px-3 py-2 flex-1"
-                  value={form.imageUrl ?? ""}
-                  onChange={(e) => setForm((p) => ({ ...p, imageUrl: e.target.value || null }))}
-                  placeholder="/uploads/hero.jpg"
-                />
-                <label className="btn-ghost press cursor-pointer">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const f = e.target.files?.[0];
-                      if (f) uploadImage(f);
-                    }}
-                  />
-                  {busy === "upload" ? "Загрузка…" : "Загрузить"}
-                </label>
-              </div>
-              {form.imageUrl ? (
-                <img src={form.imageUrl} alt="preview" className="mt-2 max-h-40 rounded-lg border" />
-              ) : null}
-            </div>
-
-            <div className="pt-2">
-              <button className="w-50 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded press" disabled={!!busy || pending} onClick={save}>
-                {busy === "save" ? "Сохранение…" : form.id ? "Сохранить" : "Создать"}
-              </button>
-            </div>
+          <div className="pt-2">
+            <button
+              className="btn btn-primary press"
+              disabled={!!busy || isPending}
+              onClick={save}
+            >
+              {busy === "save" ? "Сохранение…" : form.id ? "Сохранить" : "Создать"}
+            </button>
           </div>
         </div>
 
-        <div className="card p-5">
-          <h3 className="font-semibold mb-3">Превью</h3>
+        {/* По желанию можно оставить быстрый превью внизу формы */}
+        <div className="mt-6 rounded-xl p-4 bg-slate-50">
+          <div className="text-xs mb-2 text-slate-500">Превью</div>
           <HeroPreview data={form} lang={lang} />
         </div>
-      </section>
+      </div>
+
+      {/* Правая колонка — профили (как в SiteSettings) */}
+      <aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <h3 className="mb-3 text-sm font-semibold">Профили</h3>
+
+        <div className="space-y-2 pr-1">
+          {list.map((h) => {
+            const isActive = h.isActive;
+            const isSelected = selectedId === h.id;
+            return (
+              <div
+                key={h.id}
+                className={[
+                  "flex items-center justify-between gap-3 rounded-xl border p-3 transition",
+                  isSelected ? "border-violet-300 bg-violet-50" : "border-slate-200 hover:bg-slate-50",
+                ].join(" ")}
+              >
+                <button
+                  className="min-w-0 flex-1 text-left outline-none"
+                  onClick={() => selectProfile(h.id)}
+                  title="Открыть в форме"
+                >
+                  <div className="truncate text-sm font-medium">
+                    {h.titleTop?.ru || h.titleTop?.kk || h.titleTop?.en || "Без названия"}
+                  </div>
+                  <div className="truncate text-xs text-slate-500">
+                    {h.kicker?.ru || h.kicker?.kk || h.kicker?.en || "—"}
+                  </div>
+                </button>
+
+                <div className="flex items-center gap-1">
+                  {isActive ? (
+                    <span className="inline-flex items-center gap-1 rounded-md border border-green-200 bg-green-50 px-2 py-1 text-xs text-green-700">
+                      <span>●</span> Активно
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => makeActive(h.id)}
+                      disabled={busy === "activate" || isPending}
+                      className="rounded-md border px-2 py-1 text-xs hover:bg-gray-50 disabled:opacity-60"
+                      title="Сделать активным"
+                    >
+                      Активировать
+                    </button>
+                  )}
+
+                  {!isActive && (
+                    <button
+                      onClick={() => remove(h.id)}
+                      disabled={busy === "delete" || isPending}
+                      className="grid h-8 w-8 place-items-center rounded-lg text-rose-600 hover:bg-rose-50 disabled:opacity-60"
+                      title="Удалить профиль"
+                    >
+                      <span className="text-base leading-none">×</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+
+          {list.length === 0 && (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-500">
+              Пока нет профилей.
+            </div>
+          )}
+        </div>
+
+        {/* Кнопка «Новый профиль» — СНИЗУ, как просил, с нужным стилем */}
+        <div className="mt-4">
+          <button
+            className="w-full rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-sm text-violet-700 hover:bg-violet-100 active:scale-[0.99]"
+            onClick={newProfile}
+          >
+            + Новый профиль
+          </button>
+        </div>
+      </aside>
     </div>
   );
 }
