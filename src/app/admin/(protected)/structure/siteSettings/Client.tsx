@@ -111,10 +111,6 @@ export default function SiteSettingsClient({
     <div className="grid md:grid-cols-[minmax(0,1fr)_380px] gap-6">
       {/* Левая колонка — форма */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold">Site Settings</h2>
-          <p className="text-xs text-slate-500">Бренд, SEO, контакты, адрес и документы</p>
-        </div>
         <SettingsForm initial={toInitial(selected)} />
       </div>
 

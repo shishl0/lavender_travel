@@ -132,6 +132,10 @@ export default function DestinationsManager({ list }: { list: ListItem[] }) {
   const [openBasics, setOpenBasics] = useState(true);
   const [openAbout, setOpenAbout] = useState(true);
 
+  // quick filters/search
+  const [q, setQ] = useState("");
+  const [flt, setFlt] = useState<"all" | "active" | "home">("all");
+
   const empty: FormInitial = useMemo(
     () => ({
       key: "",
@@ -305,10 +309,38 @@ export default function DestinationsManager({ list }: { list: ListItem[] }) {
 
       {/* RIGHT */}
       <aside className={section}>
-        <h3 className="mb-3 text-sm font-semibold">Страны</h3>
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h3 className="text-sm font-semibold">Страны</h3>
+          <div className="inline-flex rounded-xl bg-slate-100 p-1">
+            {(["all","active","home"] as const).map((k) => (
+              <button
+                key={k}
+                className={["px-3 h-8 rounded-lg text-xs", flt===k?"bg-violet-600 text-white shadow-sm":"text-slate-700 hover:bg-slate-200"].join(" ")}
+                onClick={()=>setFlt(k)}
+              >
+                {k==="all"?"Все": k==="active"?"Активные":"На главной"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-3">
+          <input
+            className={inputBase}
+            placeholder="Поиск по названию…"
+            value={q}
+            onChange={(e)=>setQ(e.target.value)}
+          />
+        </div>
 
         <div className="max-h-[70vh] overflow-auto pr-1 space-y-2">
-          {items.map((it) => {
+          {items
+            .filter(it => flt==="all" || (flt==="active"? it.isActive : it.showOnHome))
+            .filter(it => {
+              const name = (it.title?.ru || it.title?.kk || it.title?.en || it.key).toLowerCase();
+              return name.includes(q.trim().toLowerCase());
+            })
+            .map((it) => {
             const isSelected = selected?.id === it.id;
             return (
               <div
@@ -370,14 +402,20 @@ export default function DestinationsManager({ list }: { list: ListItem[] }) {
                     setOpenClimate(false);
                     setOpenCurrency(false);
                   }}
-                  className="min-w-0 flex-1 text-left outline-none"
+                  className="min-w-0 flex-1 text-left outline-none flex items-start gap-2"
                 >
-                  <div className="truncate text-sm font-medium">
-                    {flag(it.key)} {t(it.title) || it.key}
-                  </div>
-                  <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <Chip ok={it.isActive} text="Активно" />
-                    <Chip ok={it.showOnHome} text="На главной" />
+                  {it.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={it.imageUrl} alt="cover" className="h-10 w-10 rounded-lg object-cover border" />
+                  ) : (
+                    <div className="h-10 w-10 rounded-lg grid place-items-center border bg-white text-lg">{flag(it.key)}</div>
+                  )}
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium">{t(it.title) || it.key}</div>
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      <Chip ok={it.isActive} text="Активно" />
+                      <Chip ok={it.showOnHome} text="На главной" />
+                    </div>
                   </div>
                 </button>
 
@@ -1043,13 +1081,15 @@ const DestinationForm = memo(function DestinationForm(props: {
       </section>
 
       {/* actions */}
-      <div className="flex items-center gap-3">
-        <button className="btn btn-primary" onClick={() => onSave(f)} disabled={busy}>
-          {busy ? "Сохранение…" : "Сохранить"}
-        </button>
-        <button className="btn-ghost" onClick={onCancel} disabled={busy}>
-          Отмена
-        </button>
+      <div className="sticky bottom-0 -mx-2 md:mx-0">
+        <div className="border-t border-slate-200 bg-white/85 backdrop-blur px-3 md:px-0 py-3 flex items-center justify-end gap-2 rounded-b-2xl">
+          <button className="btn btn-ghost" onClick={onCancel} disabled={busy}>
+            Отмена
+          </button>
+          <button className="btn btn-primary" onClick={() => onSave(f)} disabled={busy}>
+            {busy ? "Сохранение…" : "Сохранить"}
+          </button>
+        </div>
       </div>
     </div>
   );

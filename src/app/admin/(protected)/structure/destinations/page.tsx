@@ -39,6 +39,15 @@ export default async function DestinationsPage() {
 
   return (
     <div className="grid gap-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 md:p-5 shadow-sm">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-[18px] md:text-[20px] font-extrabold text-[var(--navy)]">Направления</h2>
+            <p className="text-slate-600 text-sm mt-0.5">Редактируйте страны, описания, климат, валюты и галереи.</p>
+          </div>
+        </div>
+      </div>
+
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <DestinationsManager list={list} />
       </div>

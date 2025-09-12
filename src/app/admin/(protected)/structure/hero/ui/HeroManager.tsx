@@ -203,7 +203,17 @@ export default function HeroManager({
   }
 
   return (
-    <div className="grid md:grid-cols-[minmax(0,1fr)_380px] gap-6">
+    <div className="grid gap-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 md:p-5 shadow-sm">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-[18px] md:text-[20px] font-extrabold text-[var(--navy)]">Hero</h2>
+            <p className="text-slate-600 text-sm mt-0.5">Заголовки, подзаголовок и фон главного блока.</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-[minmax(0,1fr)_380px] gap-6">
       {/* Левая колонка — форма (как в SiteSettings) */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="mb-4">
@@ -212,14 +222,11 @@ export default function HeroManager({
         </div>
 
         {/* Переключатель языков */}
-        <div className="mb-4 flex items-center gap-2">
+        <div className="mb-4 inline-flex rounded-xl bg-slate-100 p-1">
           {(["ru", "kk", "en"] as (keyof L)[]).map((code) => (
             <button
               key={code}
-              className={[
-                "px-2 py-1 rounded-md border text-xs press",
-                lang === code ? "bg-[#f0ecfb] text-[#5e3bb7] border-[#dcd0ff]" : "hover:bg-gray-50",
-              ].join(" ")}
+              className={["px-3 h-9 rounded-lg text-sm", lang === code ? "bg-violet-600 text-white shadow-sm" : "text-slate-700 hover:bg-slate-200"].join(" ")}
               onClick={() => setLang(code)}
             >
               {code.toUpperCase()}
@@ -242,7 +249,7 @@ export default function HeroManager({
                 {label} ({lang.toUpperCase()})
               </label>
               <input
-                className="h-[40px] w-full rounded-xl border border-slate-200 bg-white px-3 text-[15px] leading-[1.2] outline-none focus:ring-2 focus:ring-violet-200"
+                className="h-[44px] w-full rounded-xl border border-slate-200 bg-white/90 px-3 text-[15px] leading-[1.2] outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-200 transition"
                 value={(form[field] as L)[lang]}
                 onChange={(e) => setL(field, lang, e.target.value)}
                 placeholder={label}
@@ -275,9 +282,9 @@ export default function HeroManager({
 
             {form.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={form.imageUrl} alt="preview" className="mt-2 max-h-40 rounded-lg border" />
+              <img src={form.imageUrl} alt="preview" className="mt-2 max-h-48 rounded-xl border shadow-sm" />
             ) : (
-              <div className="mt-2 h-24 rounded-lg border grid place-items-center text-xs text-slate-400">
+              <div className="mt-2 h-28 rounded-xl border grid place-items-center text-xs text-slate-400">
                 Файл не выбран
               </div>
             )}
@@ -378,6 +385,7 @@ export default function HeroManager({
           </button>
         </div>
       </aside>
+      </div>
     </div>
   );
 }

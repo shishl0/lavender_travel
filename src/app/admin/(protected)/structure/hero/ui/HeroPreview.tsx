@@ -38,23 +38,23 @@ export default function HeroPreview({
             sizes="100vw"
           />
         ) : (
-          <div className="absolute inset-0 grid place-items-center bg-slate-100 text-slate-400 text-sm">
+          <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-violet-100 via-white to-sky-100 text-slate-400 text-sm">
             Нет изображения
           </div>
         )}
       </div>
 
       {/* Оверлей затемнения */}
-      <div className="hero-overlay absolute inset-0 bg-black/40" />
+      <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-black/60 via-black/35 to-black/20" />
 
       {/* Контент */}
-      <div className="hero-content relative z-10 py-16 md:py-24">
+      <div className="hero-content relative z-10 py-14 md:py-20">
         <div className="container">
-          <div className="kicker text-sm font-semibold uppercase tracking-wider text-violet-200">
+          <div className="kicker inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-violet-100 backdrop-blur-sm">
             {t(data.kicker, lang)}
           </div>
 
-          <h1 className="hero-title hero-title--onimg mt-3 text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight text-white drop-shadow-md">
+          <h1 className="hero-title hero-title--onimg mt-4 text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight text-white drop-shadow-[0_6px_28px_rgba(0,0,0,.35)]">
             {t(data.titleTop, lang)} <br /> {t(data.titleBottom, lang)}
           </h1>
 
@@ -63,7 +63,9 @@ export default function HeroPreview({
           </p>
 
           <div className="mt-6 flex items-center gap-3">
-            <button className="btn btn-primary press">Выбрать тур</button>
+            <button className="btn btn-primary press">
+              Выбрать тур
+            </button>
           </div>
         </div>
       </div>

@@ -32,7 +32,7 @@ type Initial = {
 export default function SettingsForm({ initial }: { initial: Initial }) {
   const router = useRouter();
   const inputBase =
-    "h-[40px] w-full rounded-xl border border-slate-200 bg-white px-3 text-[15px] leading-[1.2] outline-none focus:ring-2 focus:ring-violet-200";
+    "h-[44px] w-full rounded-xl border border-slate-200 bg-white/90 px-3 text-[15px] leading-[1.2] outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-200 transition";
 
   const isPdf = (u?: string | null) => !!u && /\.pdf($|\?)/i.test(u);
   const [busy, setBusy] = useState<null | "save" | "uploadOg" | "uploadCert">(null);
@@ -246,9 +246,9 @@ export default function SettingsForm({ initial }: { initial: Initial }) {
     const fileId = useMemo(() => "up_" + Math.random().toString(36).slice(2), []);
 
     return (
-      <div className="grid gap-1.5">
+      <div className="grid gap-1">
         <div className="flex items-center justify-between">
-          <div className="text-sm text-slate-700">{label}</div>
+          <div className="text-sm font-medium text-slate-800">{label}</div>
           <div className="flex items-center gap-1.5">
             {/* upload */}
             <label
@@ -308,6 +308,13 @@ export default function SettingsForm({ initial }: { initial: Initial }) {
             </button>
           </div>
         </div>
+        <input
+          className={inputBase}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+        />
+        <div className="text-[12px] text-slate-500">DOCX/DOC, PDF и изображения поддерживаются. Можно вставить внешний URL.</div>
       </div>
     );
   }
@@ -418,10 +425,10 @@ export default function SettingsForm({ initial }: { initial: Initial }) {
       type="button"
       onClick={() => setForm((p) => ({ ...p, statsMode: val }))}
       className={[
-        "px-3 h-9 rounded-xl border text-sm press",
+        "px-3 h-9 rounded-lg text-sm press",
         form.statsMode === val
-          ? "border-violet-300 bg-violet-50 text-violet-700"
-          : "border-slate-200 bg-white text-slate-900 hover:bg-slate-50",
+          ? "bg-violet-600 text-white shadow-sm"
+          : "bg-slate-100 text-slate-700 hover:bg-slate-200",
       ].join(" ")}
       aria-pressed={form.statsMode === val}
     >
@@ -431,6 +438,15 @@ export default function SettingsForm({ initial }: { initial: Initial }) {
 
   return (
     <div className="grid gap-6">
+      {/* HEADER */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 md:p-5 shadow-sm">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-[18px] md:text-[20px] font-extrabold text-[var(--navy)]">Site Settings</h2>
+            <p className="text-slate-600 text-sm mt-0.5">Бренд, контакты, документы и отображение блоков.</p>
+          </div>
+        </div>
+      </div>
       {/* BRAND + SEO */}
       <section className="rounded-2xl border border-slate-200 bg-white p-4 md:p-5 shadow-sm">
         <h4 className="mb-3 text-[14.5px] font-semibold text-slate-900">Бренд & SEO</h4>
@@ -622,9 +638,9 @@ export default function SettingsForm({ initial }: { initial: Initial }) {
           </div>
         </div>
 
-        <div className="mt-3">
+        <div className="mt-4">
           <div className="mb-2 text-sm text-slate-700">Режим блока</div>
-          <div className="flex items-center gap-2">
+          <div className="inline-flex items-center gap-1 rounded-xl bg-slate-100 p-1">
             {statChip("shown", "Показывать")}
             {statChip("hidden", "Скрыть")}
           </div>
@@ -712,15 +728,17 @@ export default function SettingsForm({ initial }: { initial: Initial }) {
         </div>
       </section>
 
-      {/* ACTIONS */}
-      <div className="pt-1 flex items-center gap-3">
-        <button
-          className="btn btn-primary press"
-          onClick={save}
-          disabled={busy === "save" || busy === "uploadOg" || busy === "uploadCert"}
-        >
-          {busy === "save" ? "Сохранение…" : "Сохранить"}
-        </button>
+      {/* ACTIONS (sticky) */}
+      <div className="sticky bottom-0 z-20 -mx-2 md:mx-0">
+        <div className="border-t border-slate-200 bg-white/85 backdrop-blur px-3 md:px-0 py-3 flex items-center justify-end gap-2 rounded-b-2xl">
+          <button
+            className="btn btn-primary press"
+            onClick={save}
+            disabled={busy === "save" || busy === "uploadOg" || busy === "uploadCert"}
+          >
+            {busy === "save" ? "Сохранение…" : "Сохранить"}
+          </button>
+        </div>
       </div>
     </div>
   );
