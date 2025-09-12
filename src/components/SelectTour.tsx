@@ -137,6 +137,13 @@ const COUNTRIES: Country[] = [
   { code: "eg", name: "Египет", flag: "🇪🇬", cities: ["Александрия","Каир","Нувейба","Хургада","Шарм-эль-Шейх"] },
   { code: "th", name: "Таиланд", flag: "🇹🇭", cities: ["Бангкок","Као Лак","Ко Чанг","Ко Яо Нои","Ко Яо Яй","Краби","Ланта","Остров Мапрао","Остров Нака","Остров Рача","Паттайя","Пханг-Нга","Пхетчхабури","Пхи-Пхи","Пхукет","Самуи","Хуа Хин"] },
   { code: "ae", name: "ОАЭ", flag: "🇦🇪", cities: ["Абу-Даби","Аджман","Дубай","Рас-эль-Хайма","Умм-Аль-Кувейн","Фуджейра","Шарджа"] },
+  { code: "cn", name: "Китай", flag: "🇨🇳", cities: ["Гуанчжоу","о. Хайнань","Пекин","Синьцзян-Уйгурский автономный район","Чжэцзян","Шанхай"] },
+  { code: "mv", name: "Мальдивы", flag: "🇲🇻", cities: ["Мальдивы","Северный Ари Атолл"] },
+  { code: "ge", name: "Грузия", flag: "🇬🇪", cities: ["Бакуриани","Батуми","Боржоми","Гонио","Гудаури","Казбеги","Кахетия","Кобулети","Кутаиси","Саирме","Самцхе-Джавахети","Сванети","Тбилиси","Уреки","Цалка","Цинандали","Цхалтубо","Шекветили"] },
+  { code: "id", name: "Индонезия", flag: "🇮🇩", cities: ["Бали","Западные Малые Зондские острова","Куала-Лумпур"] },
+  { code: "gr", name: "Греция", flag: "🇬🇷", cities: ["Афины и Аттика","Корфу","Крит","Миконос"] },
+  { code: "it", name: "Италия", flag: "🇮🇹", cities: ["Адриатическая Ривьера","Венецианская Ривьера","Лацио","Лигурия","Ломбардия","Милан","Ривьера-ди-Улиссе","Рим","Сардиния","Сицилия"] },
+  { code: "qa", name: "Катар", flag: "🇶🇦", cities: ["Аль-Райян","Аш-Шамаль","Доха","Доха - городские отели","Доха - пляжные отели","Рас Абрук","Эль-Хаур","Эр-Рувайс"] },
 ];
 
 /* ========= Календарь (2 месяца, выбор диапазона) ========= */
@@ -296,13 +303,78 @@ export default function SelectTour({
   waDigits?: string;
 }) {
   const { t, i18n } = useTranslation();
+  const bcp47 = useMemo(() => {
+    const l = (i18n.language || "ru").slice(0,2);
+    return l === "kk" ? "kk-KZ" : l === "en" ? "en-US" : "ru-RU";
+  }, [i18n.language]);
+
+  // Country labels by locale (via Intl.DisplayNames, fallback to RU name)
+  const regionCode: Record<string,string> = { tr: "TR", vn: "VN", eg: "EG", th: "TH", ae: "AE", cn: "CN", mv: "MV", ge: "GE", id: "ID", gr: "GR", it: "IT", qa: "QA" };
+  const countryLabel = (code: string) => {
+    const lang2 = (i18n.language || "ru").slice(0, 2) as "ru" | "kk" | "en";
+    // Overrides for ambiguous DisplayNames (e.g., Mainland China)
+    const overrides: Record<string, Partial<Record<typeof lang2, string>>> = {
+      cn: { ru: "Китай", kk: "Қытай", en: "China" },
+      ae: { ru: "ОАЭ", kk: "БАӘ", en: "UAE" },
+    };
+    const ov = (overrides[code] || {})[lang2];
+    if (ov && ov.trim()) return ov;
+
+    try {
+      const tag = bcp47;
+      // Some iOS/old Safari may lack kk; fallback handled by try/catch
+      const dn = new (Intl as any).DisplayNames([tag], { type: "region" });
+      const name = dn.of(regionCode[code] || code.toUpperCase());
+      if (typeof name === "string" && name.trim()) return name;
+    } catch {}
+    return COUNTRIES.find((c) => c.code === code)?.name || code.toUpperCase();
+  };
+  const countryCodeFromLabel = (label?: string | null): string | null => {
+    if (!label) return null;
+    for (const c of COUNTRIES) {
+      if (c.name === label) return c.code;
+      try {
+        const dn = new (Intl as any).DisplayNames([bcp47], { type: "region" });
+        const loc = dn.of(regionCode[c.code] || c.code.toUpperCase());
+        if (loc === label) return c.code;
+        // Check override mapping as well
+        const lang2 = (i18n.language || "ru").slice(0, 2) as "ru" | "kk" | "en";
+        const overrides: Record<string, Partial<Record<typeof lang2, string>>> = {
+          cn: { ru: "Китай", kk: "Қытай", en: "China" },
+          ae: { ru: "ОАЭ", kk: "БАӘ", en: "UAE" },
+        };
+        const ov = (overrides[c.code] || {})[lang2];
+        if (ov && ov === label) return c.code;
+      } catch {}
+    }
+    return null;
+  };
+
+  // Departure labels by locale
+  const depMap = {
+    ru: { ala: "Алматы", nqz: "Астана" },
+    kk: { ala: "Алматы", nqz: "Астана" },
+    en: { ala: "Almaty", nqz: "Astana" },
+  } as const;
+  const depLabel = (code: "ala" | "nqz") => {
+    const l = (i18n.language || "ru").slice(0,2) as "ru"|"kk"|"en";
+    return (depMap[l] ?? depMap.ru)[code];
+  };
+  const detectDepCode = (label: string): ("ala"|"nqz") | null => {
+    const vals = [depMap.ru, depMap.kk, depMap.en];
+    for (const set of vals) {
+      if (set.ala === label) return "ala";
+      if (set.nqz === label) return "nqz";
+    }
+    return null;
+  };
   const btnText = label ?? t("hero.ctaPrimary");
 
   /* кнопка → форма */
   const [editing, setEditing] = useState(false);
 
   /* state формы */
-  const [departure, setDeparture] = useState<"Алматы" | "Астана">("Алматы");
+  const [departure, setDeparture] = useState<string>(depLabel("ala"));
   const [country, setCountry] = useState<string>("");
   const [city, setCity] = useState<string>("");
   const tourText = country ? (city ? `${country}, ${city}` : country) : "";
@@ -332,7 +404,7 @@ export default function SelectTour({
       const raw = localStorage.getItem(LS_KEY);
       if (!raw) return;
       const v = JSON.parse(raw);
-      setDeparture(v.departure ?? "Алматы");
+      setDeparture(v.departure ?? depLabel("ala"));
       setCountry(v.country ?? "");
       setCity(v.city ?? "");
       setCheckIn(v.checkIn ?? "");
@@ -349,6 +421,26 @@ export default function SelectTour({
     const v = { departure, country, city, checkIn, checkOut, adults, childrenCount, childrenAges, name, phone, message };
     try { localStorage.setItem(LS_KEY, JSON.stringify(v)); } catch {}
   }, [departure, country, city, checkIn, checkOut, adults, childrenCount, childrenAges, name, phone, message]);
+
+  // Релокализуем выбранные значения при смене языка
+  useEffect(() => {
+    // departure
+    if (departure) {
+      const code = detectDepCode(departure);
+      if (code) {
+        const next = depLabel(code);
+        if (next !== departure) setDeparture(next);
+      }
+    }
+    // country
+    if (country) {
+      const code = countryCodeFromLabel(country);
+      if (code) {
+        const next = countryLabel(code);
+        if (next !== country) setCountry(next);
+      }
+    }
+  }, [bcp47]);
 
   /* раскрытые поповеры */
   const [openSeg, setOpenSeg] = useState<null | string>(null);
@@ -446,27 +538,89 @@ ${t("wa.departureFrom")}: ${departure}${message ? `\n${t("wa.comment")}: ${messa
   };
 
   /* ========= POPUP CONTENT ========= */
+  // Активные направления из CMS (для фильтрации стран)
+  const [activeNames, setActiveNames] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/destinations/public/list')
+      .then(r => r.json())
+      .then(j => {
+        if (!alive) return;
+        const s = new Set<string>();
+        const items = Array.isArray(j?.items) ? j.items : [];
+        for (const it of items) {
+          if (!it?.isActive) continue;
+          const t: any = it?.title || {};
+          for (const v of [t.ru, t.en, t.kk]) {
+            if (typeof v === 'string' && v.trim()) s.add(v.trim().toLowerCase());
+          }
+        }
+        setActiveNames(s);
+      })
+      .catch(() => setActiveNames(new Set()));
+    return () => { alive = false; };
+  }, []);
+
+  const visibleCountries = useMemo(() => {
+    if (!activeNames.size) return COUNTRIES; // данных нет — показываем все
+    let dnRU: any, dnEN: any, dnKK: any;
+    try { dnRU = new (Intl as any).DisplayNames(['ru-RU'], { type: 'region' }); } catch {}
+    try { dnEN = new (Intl as any).DisplayNames(['en-US'], { type: 'region' }); } catch {}
+    try { dnKK = new (Intl as any).DisplayNames(['kk-KZ'], { type: 'region' }); } catch {}
+    const isVisible = (c: Country) => {
+      const labels = [c.name];
+      const rc = regionCode[c.code] || c.code.toUpperCase();
+      try { const v = dnRU?.of?.(rc); if (v) labels.push(String(v)); } catch {}
+      try { const v = dnEN?.of?.(rc); if (v) labels.push(String(v)); } catch {}
+      try { const v = dnKK?.of?.(rc); if (v) labels.push(String(v)); } catch {}
+      return labels.some((n) => activeNames.has(n.toLowerCase()));
+    };
+    return COUNTRIES.filter(isVisible);
+  }, [activeNames]);
+
   const CountryPickerContent = () => {
     const [activeCode, setActiveCode] = useState<string>(() => {
       if (country) {
-        const found = COUNTRIES.find((c) => c.name === country)?.code;
+        const found = COUNTRIES.find((c) => c.name === country || countryLabel(c.code) === country)?.code;
         return found || COUNTRIES[0].code;
       }
       return COUNTRIES[0].code;
     });
     const active = COUNTRIES.find((c) => c.code === activeCode)!;
+    const activeLabel = countryLabel(active.code);
+
+    // City localized labels (EN mapping only; RU/KK show original)
+    const CITY_EN: Record<string, Record<string, string>> = {
+      tr: { "Аланья":"Alanya","Анкара":"Ankara","Анталья":"Antalya","Афьон":"Afyon","Белек":"Belek","Бодрум":"Bodrum","Даламан":"Dalaman","Каппадокия":"Cappadocia","Кемер":"Kemer","Мармарис":"Marmaris","Олимпос":"Olympos","Сиде":"Side","Стамбул":"Istanbul","Фетхие":"Fethiye","Ялова":"Yalova" },
+      vn: { "Дананг":"Da Nang","Нячанг":"Nha Trang","Фантьет":"Phan Thiet","Фукуок":"Phu Quoc","Хойан":"Hoi An","Хюэ":"Hue" },
+      eg: { "Александрия":"Alexandria","Каир":"Cairo","Нувейба":"Nuweiba","Хургада":"Hurghada","Шарм-эль-Шейх":"Sharm El Sheikh" },
+      th: { "Бангкок":"Bangkok","Као Лак":"Khao Lak","Ко Чанг":"Ko Chang","Ко Яо Нои":"Ko Yao Noi","Ко Яо Яй":"Ko Yao Yai","Краби":"Krabi","Ланта":"Lanta","Остров Мапрао":"Maprao Island","Остров Нака":"Naka Island","Остров Рача":"Racha Island","Паттайя":"Pattaya","Пханг-Нга":"Phang Nga","Пхетчхабури":"Phetchaburi","Пхи-Пхи":"Phi Phi","Пхукет":"Phuket","Самуи":"Samui","Хуа Хин":"Hua Hin" },
+      ae: { "Абу-Даби":"Abu Dhabi","Аджман":"Ajman","Дубай":"Dubai","Рас-эль-Хайма":"Ras Al Khaimah","Умм-Аль-Кувейн":"Umm Al Quwain","Фуджейра":"Fujairah","Шарджа":"Sharjah" },
+      cn: { "Гуанчжоу":"Guangzhou","о. Хайнань":"Hainan Island","Пекин":"Beijing","Синьцзян-Уйгурский автономный район":"Xinjiang Uygur Autonomous Region","Чжэцзян":"Zhejiang","Шанхай":"Shanghai" },
+      mv: { "Мальдивы":"Maldives","Северный Ари Атолл":"North Ari Atoll" },
+      ge: { "Бакуриани":"Bakuriani","Батуми":"Batumi","Боржоми":"Borjomi","Гонио":"Gonio","Гудаури":"Gudauri","Казбеги":"Kazbegi","Кахетия":"Kakheti","Кобулети":"Kobuleti","Кутаиси":"Kutaisi","Саирме":"Sairme","Самцхе-Джавахети":"Samtskhe–Javakheti","Сванети":"Svaneti","Тбилиси":"Tbilisi","Уреки":"Ureki","Цалка":"Tsalka","Цинандали":"Tsinandali","Цхалтубо":"Tskhaltubo","Шекветили":"Shekvetili" },
+      id: { "Бали":"Bali","Западные Малые Зондские острова":"West Lesser Sunda Islands","Куала-Лумпур":"Kuala Lumpur" },
+      gr: { "Афины и Аттика":"Athens & Attica","Корфу":"Corfu","Крит":"Crete","Миконос":"Mykonos" },
+      it: { "Адриатическая Ривьера":"Adriatic Riviera","Венецианская Ривьера":"Venetian Riviera","Лацио":"Lazio","Лигурия":"Liguria","Ломбардия":"Lombardy","Милан":"Milan","Ривьера-ди-Улиссе":"Riviera di Ulisse","Рим":"Rome","Сардиния":"Sardinia","Сицилия":"Sicily" },
+      qa: { "Аль-Райян":"Al Rayyan","Аш-Шамаль":"Ash Shamal","Доха":"Doha","Доха - городские отели":"Doha - City Hotels","Доха - пляжные отели":"Doha - Beach Hotels","Рас Абрук":"Ras Abrouq","Эль-Хаур":"Al Khor","Эр-Рувайс":"Ar Ru'ays" },
+    };
+    const cityLabel = (ct: string): string => {
+      const l = (i18n.language || "ru").slice(0,2);
+      if (l === "en") return CITY_EN[active.code]?.[ct] ?? ct;
+      return ct;
+    };
 
     return (
       <div className="country-pop">
         <div className="country-list">
-          {COUNTRIES.map((c) => (
+          {visibleCountries.map((c) => (
             <button
               key={c.code}
               type="button"
               className={`country-li ${c.code === activeCode ? "is-active" : ""}`}
               onClick={(e) => { e.stopPropagation(); setActiveCode(c.code); }}
             >
-              <span className="mr-2">{c.flag}</span>{c.name}
+              <span className="mr-2">{c.flag}</span>{countryLabel(c.code)}
             </button>
           ))}
         </div>
@@ -475,11 +629,11 @@ ${t("wa.departureFrom")}: ${departure}${message ? `\n${t("wa.comment")}: ${messa
           <button
             type="button"
             className="city-head btn"
-            onClick={(e) => { e.stopPropagation(); setCountry(active.name); setCity(""); setOpenSeg(null); }}
+            onClick={(e) => { e.stopPropagation(); setCountry(activeLabel); setCity(""); setOpenSeg(null); }}
             title={t("st.chooseCountry")}
           >
             <span>{active.flag}</span>
-            <b>{active.name}</b>
+            <b>{activeLabel}</b>
           </button>
 
           <div className="city-grid">
@@ -488,9 +642,9 @@ ${t("wa.departureFrom")}: ${departure}${message ? `\n${t("wa.comment")}: ${messa
                 key={ct}
                 type="button"
                 className="city-li"
-                onClick={(e) => { e.stopPropagation(); setCountry(active.name); setCity(ct); setOpenSeg(null); }}
+                onClick={(e) => { e.stopPropagation(); setCountry(activeLabel); setCity(cityLabel(ct)); setOpenSeg(null); }}
               >
-                {ct}
+                {cityLabel(ct)}
               </button>
             ))}
           </div>
@@ -597,7 +751,7 @@ ${t("wa.departureFrom")}: ${departure}${message ? `\n${t("wa.comment")}: ${messa
 
               <Dissolve open={openSeg === "from"} className="seg-pop seg-pop--auto">
                 <div className="grid grid-cols-2 gap-2">
-                  {(["Алматы", "Астана"] as const).map((opt) => (
+                  {[depLabel("ala"), depLabel("nqz")].map((opt) => (
                     <button
                       key={opt}
                       type="button"

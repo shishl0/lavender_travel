@@ -618,6 +618,23 @@ input:focus-visible, textarea:focus-visible, select:focus-visible{
   white-space: nowrap;
 }
 .review-card .stars-row{ margin-top: 6px; }
+
+/* ========= LEGAL DOC ========= */
+.legal-doc{ max-width: 72ch; margin: 0 auto; color: var(--navy); }
+.legal-doc :where(h1,h2,h3){ font-weight:800; color: var(--navy); line-height:1.15; }
+.legal-doc h1{ font-size: 1.8rem; margin:.8rem 0; }
+.legal-doc h2{ font-size: 1.4rem; margin:.9rem 0 .5rem; }
+.legal-doc h3{ font-size: 1.15rem; margin:.8rem 0 .4rem; }
+.legal-doc p{ margin:.6rem 0; line-height:1.7; color: #374151; }
+.legal-doc ul, .legal-doc ol{ margin:.6rem 0 .6rem 1.15rem; padding:0; }
+.legal-doc li{ margin:.25rem 0; }
+.legal-doc a{ color: var(--tint); text-decoration: underline; text-underline-offset: 2px; }
+.legal-doc strong{ font-weight:700; }
+.legal-doc em{ font-style: italic; }
+.legal-doc table{ width:100%; border-collapse: collapse; margin:1rem 0; }
+.legal-doc th, .legal-doc td{ border:1px solid rgba(17,24,39,.12); padding:.5rem .6rem; text-align:left; }
+.legal-doc .legal-embed{ position:relative; width:100%; border-radius: 14px; overflow:hidden; border:1px solid rgba(17,24,39,.08); background:#fff; box-shadow: var(--shadow-sm); }
+.legal-doc .legal-embed iframe{ width:100%; height:min(70vh, 820px); border:0; }
 .review-card .text{
   margin-top:8px; font-size:14px; color: #334155; line-height: 1.45;
   display:-webkit-box; -webkit-line-clamp:4; line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
@@ -723,31 +740,52 @@ input:focus-visible, textarea:focus-visible, select:focus-visible{
 
 /* ========= SKELETONS (для тизера отзывов и пр.) ========= */
 .skeleton{ position:relative; overflow:hidden; background: linear-gradient(180deg, #f3f4f6 0%, #f8fafc 100%); }
+.skeleton.dark{ background: linear-gradient(180deg, #e2e8f0 0%, #f1f5f9 100%); }
 .skeleton::after{
   content:""; position:absolute; inset:0; transform: translateX(-100%);
   background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.65) 50%, rgba(255,255,255,0) 100%);
   animation: shimmer 1.6s infinite;
 }
+.skeleton.dark::after{ background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.5) 50%, rgba(255,255,255,0) 100%); }
 @keyframes shimmer{ 100%{ transform: translateX(100%); } }
 
 .skel-card{ border:1px solid rgba(17,24,39,.08); border-radius:16px; background:#fff; padding:12px; box-shadow: var(--shadow-sm); }
 .skel-line{ height:12px; border-radius:6px; }
 .skel-line.sm{ height:10px; }
 .skel-line.lg{ height:14px; }
+.skel-line.xl{ height:18px; }
 .skel-gap{ height:8px; }
 .skel-img{ aspect-ratio:1/1; border-radius:10px; }
 
 /* ===== POPULAR DESTINATIONS (teaser) — v2 ===== */
 .pop-grid{
-  --pop-h: clamp(480px, 45vw, 540px); /* адаптивная высота, можно поднять инлайном */
+  --pop-h: clamp(420px, 45vw, 520px); /* базовая высота */
   max-width: 92rem; margin: 0 auto;
   padding: 0 1rem;
   display: grid;
   gap: 1.25rem;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr; /* планшеты по умолчанию: 2 колонки */
 }
-@media (max-width:639.98px){ .pop-grid{ grid-template-columns: 1fr; } }
-@media (min-width:1024px){ .pop-grid{ grid-template-columns: repeat(4,minmax(0,1fr)); } }
+/* Телефоны: 3x2, последние две по центру */
+@media (max-width:639.98px){
+  .pop-grid{ grid-template-columns: repeat(6, minmax(0,1fr)); --pop-h: clamp(220px, 36vw, 280px); }
+  .pop-grid > .pop-card{ grid-column: span 2; }
+  /* Только когда ровно 5 карточек */
+  .pop-grid[data-count='5'] > .pop-card:nth-last-child(2){ grid-column: 2 / span 2; }
+  .pop-grid[data-count='5'] > .pop-card:last-child{ grid-column: 4 / span 2; }
+}
+/* Десктопы: до 5 в ряд, центрирование по количеству */
+@media (min-width:1024px){
+  /* 10-трековая сетка: каждая карточка занимает 2 трека */
+  .pop-grid{ grid-template-columns: repeat(10, minmax(0,1fr)); --pop-h: clamp(360px, 28vw, 440px); }
+  .pop-grid > .pop-card{ grid-column: span 2; }
+
+  /* Центровка по количеству карточек в одном ряду */
+  .pop-grid[data-count='4'] > .pop-card:first-child{ grid-column: 2 / span 2; }
+  .pop-grid[data-count='3'] > .pop-card:first-child{ grid-column: 3 / span 2; }
+  .pop-grid[data-count='2'] > .pop-card:first-child{ grid-column: 4 / span 2; }
+  .pop-grid[data-count='1'] > .pop-card:first-child{ grid-column: 5 / span 2; }
+}
 
 /* ===== POPULAR DESTINATIONS (teaser) — чистый неон через box-shadow ===== */
 .pop-card{

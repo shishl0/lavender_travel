@@ -31,18 +31,17 @@ async function _POST(req: Request) {
       statsClients,
       statsRating,
       inTourismSince,       // может приходить Date/ISO из формы
-      statsMode,            // 'shown' | 'hidden' | 'auto'
-      statsAutoAt,          // ISO/Date
+      statsMode,            // 'shown' | 'hidden'
       // ==== NEW: адрес/доки ====
       address,              // {ru,kk,en}
       certificateUrl,
-      // ==== NEW: политики ====
+      // ==== NEW: политики (rich HTML) ====
       privacyPolicy,        // Localized rich JSON
       termsOfService,       // Localized rich JSON
-      // ==== NEW: минимальные цены ====
-      pricingMinPriceEnabled,
-      pricingMinPriceFormula,
-      pricingMatrixUrl,
+      // ==== NEW: политики (DOCX ссылки по языкам) ====
+      privacyPolicyDocUrls,
+      termsOfServiceDocUrls,
+      // ==== (pricing fields removed — not in schema) ====
     } = body ?? {};
 
     if (!brandName || !metaTitle || !metaDescription) {
@@ -50,7 +49,17 @@ async function _POST(req: Request) {
     }
 
     // приведение типов (мягко)
-    const data = {
+    const sanitizeDocUrls = (v: any) => {
+      if (!v || typeof v !== "object") return null;
+      const out: any = {};
+      const set = (k: "ru" | "kk" | "en") => {
+        const s = v?.[k];
+        if (typeof s === "string" && s.trim()) out[k] = s.trim();
+      };
+      set("ru"); set("kk"); set("en");
+      return Object.keys(out).length ? out : null;
+    };
+    const data: any = {
       brandName: String(brandName),
       brandTagline: typeof brandTagline === "string" && brandTagline.trim() ? brandTagline : null,
 
@@ -67,7 +76,6 @@ async function _POST(req: Request) {
       inTourismSince: isISO(inTourismSince) ? new Date(inTourismSince) : (inTourismSince instanceof Date ? inTourismSince : null),
 
       statsMode: typeof statsMode === "string" ? statsMode : null,
-      statsAutoAt: isISO(statsAutoAt) ? new Date(statsAutoAt) : (statsAutoAt instanceof Date ? statsAutoAt : null),
 
       // NEW address/docs
       address: address ?? null,
@@ -76,11 +84,8 @@ async function _POST(req: Request) {
       // NEW policies
       privacyPolicy: asNullable(privacyPolicy),
       termsOfService: asNullable(termsOfService),
-
-      // NEW pricing
-      pricingMinPriceEnabled: !!pricingMinPriceEnabled,
-      pricingMinPriceFormula: typeof pricingMinPriceFormula === "string" ? pricingMinPriceFormula : null,
-      pricingMatrixUrl: asURLorNull(pricingMatrixUrl),
+      privacyPolicyDocUrls: sanitizeDocUrls(privacyPolicyDocUrls),
+      termsOfServiceDocUrls: sanitizeDocUrls(termsOfServiceDocUrls),
     };
 
     let created: { id: string } | null = null;

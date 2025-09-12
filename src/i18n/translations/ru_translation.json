@@ -72,6 +72,7 @@
       "ratingLabel": "средняя оценка",
       "clientsSuffix": "+",
       "yearsSuffix": " лет",
+      "monthsSuffix": " мес.",
       "ratingSuffix": "/5"
     }
   },

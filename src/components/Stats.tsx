@@ -2,11 +2,17 @@
 
 import { useTranslation } from "react-i18next";
 
+type Unit = "clients" | "years" | "months" | "rating";
+
 export type StatItem = {
   icon: "users" | "globe" | "years" | "star";
   value?: string | number;
+  /* необязательно: если указать, берём как есть; иначе локализованный */
   suffix?: string;
-  label: string;
+  /* необязательно: если указать, берём как есть; иначе локализованный */
+  label?: string;
+  /* подсказывает выбор суффикса */
+  unit?: Unit;
 };
 
 const LINKS: Record<StatItem["icon"], string> = {
@@ -30,24 +36,9 @@ export default function Stats({
   // Если items не передали — используем локализованные дефолты.
   const data: StatItem[] =
     items ?? [
-      {
-        icon: "users",
-        value: "1 200",
-        suffix: t("stats.defaults.clientsSuffix", "+"),
-        label: t("stats.defaults.clientsLabel", "довольных клиентов"),
-      },
-      {
-        icon: "years",
-        value: "7",
-        suffix: t("stats.defaults.yearsSuffix", " лет"),
-        label: t("stats.defaults.yearsLabel", "в туризме"),
-      },
-      {
-        icon: "star",
-        value: "4.8",
-        suffix: t("stats.defaults.ratingSuffix", "/5"),
-        label: t("stats.defaults.ratingLabel", "средняя оценка"),
-      },
+      { icon: "users", value: "1 200", unit: "clients" },
+      { icon: "years", value: "7", unit: "years" },
+      { icon: "star", value: "4.8", unit: "rating" },
     ];
 
   return (
@@ -59,13 +50,37 @@ export default function Stats({
       >
         {data.map((s, i) => {
           const href = LINKS[s.icon] || "#";
+          // Локализация подписи и суффикса игнорирует пришедшие значения,
+          // чтобы динамически переключаться при смене языка.
+          const labelText = s.label
+            ? s.label
+            : s.icon === "users"
+              ? t("stats.defaults.clientsLabel", "довольных клиентов")
+              : s.icon === "years"
+                ? t("stats.defaults.yearsLabel", "в туризме")
+                : s.icon === "star"
+                  ? t("stats.defaults.ratingLabel", "средняя оценка")
+                  : "";
+
+          const unit = s.unit
+            ?? (s.icon === "users" ? "clients"
+            : s.icon === "star" ? "rating"
+            : s.icon === "years" ? "years" : undefined);
+
+          const suffixText = s.suffix ?? (
+            unit === "clients" ? t("stats.defaults.clientsSuffix", "+")
+            : unit === "months" ? t("stats.defaults.monthsSuffix", " мес.")
+            : unit === "rating" ? t("stats.defaults.ratingSuffix", "/5")
+            : t("stats.defaults.yearsSuffix", " лет")
+          );
+          const hasValue = s.value !== undefined && s.value !== null && `${s.value}` !== "";
           return (
             <a
               className="stat-link"
               href={href}
               role="listitem"
               key={i}
-              aria-label={t("stats.goto", "Перейти: {{label}}", { label: s.label })}
+              aria-label={t("stats.goto", "Перейти: {{label}}", { label: labelText })}
             >
               <div className="stat-icon" aria-hidden="true">
                 <Icon name={s.icon} />
@@ -73,9 +88,9 @@ export default function Stats({
               <div className="stat-body">
                 <div className="stat-value">
                   {s.value ?? ""}
-                  <span className="stat-suffix">{s.suffix ?? ""}</span>
+                  <span className="stat-suffix">{hasValue ? suffixText : ""}</span>
                 </div>
-                <div className="stat-label">{s.label}</div>
+                <div className="stat-label">{labelText}</div>
               </div>
             </a>
           );

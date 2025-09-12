@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import I18nInit from "@/components/I18nInit";
 import ClientRoot from "@/components/ClientRoot";
 import { getActiveSettings } from "@/lib/cms-cache";
+import { detectLocale } from "@/lib/i18n-server";
 
 const SITE_URL =
   (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
@@ -45,9 +46,10 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const lang = await detectLocale();
   return (
-    <html lang="ru" suppressHydrationWarning>
+    <html lang={lang} suppressHydrationWarning>
       <body className="antialiased">
         <Suspense fallback={null}><I18nInit /></Suspense>
         <Suspense fallback={null}><ClientRoot /></Suspense>

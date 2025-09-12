@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
+import type { Localized } from "@/types/cms";
 
 type Item = {
   id: string;
-  title: string;
+  title: string | Localized;
   imageUrl?: string;
   priceFrom?: number | string;
   nights?: number;
@@ -22,7 +23,7 @@ function formatTengeNumber(v?: number | string): string | null {
 }
 
 export default function DestinationsTeaser({ items = [] as Item[] }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   if (!items?.length) return null;
 
   const sectionTitle = t("teaser.destinations.title", "Популярные направления");
@@ -64,11 +65,20 @@ export default function DestinationsTeaser({ items = [] as Item[] }) {
         </div>
       </div>
 
-      <div className="pop-grid">
+      <div className="pop-grid" data-count={items.length}>
         {items.map((d) => {
           const href = d.href || `/destinations#${d.id}`;
           const img = d.imageUrl || "/images/placeholder.jpg";
           const priceNum = formatTengeNumber(d.priceFrom);
+          const lang = (i18n.language || "ru").slice(0, 2);
+          const titleText = (() => {
+            if (typeof d.title === "string") return d.title;
+            const m = d.title as Localized;
+            if (lang === "kk" && m.kk) return m.kk;
+            if (lang === "en" && m.en) return m.en;
+            if (lang === "ru" && m.ru) return m.ru;
+            return m.ru || m.kk || m.en || "Направление";
+          })();
 
           return (
             <Link
@@ -77,22 +87,22 @@ export default function DestinationsTeaser({ items = [] as Item[] }) {
               className="pop-card press"
               aria-label={
                 priceNum
-                  ? `${d.title} — ${pricePrefix} ${priceNum} тг`
-                  : d.title
+                  ? `${titleText} — ${pricePrefix} ${priceNum} тг`
+                  : titleText
               }
             >
               {/* фон */}
               <img
                 className="pop-img"
                 src={img}
-                alt={d.title}
+                alt={titleText}
                 loading="lazy"
                 decoding="async"
               />
 
               {/* подпись на блюре (сам блюр задаёт .pop-card::after) */}
               <div className="pop-cap">
-                <div className="pop-title">{d.title}</div>
+                <div className="pop-title">{titleText}</div>
                 {priceNum && (
                   <div className="pop-price">
                     <span className="muted">{pricePrefix}</span> {priceNum}

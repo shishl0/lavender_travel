@@ -189,12 +189,12 @@ export default function Footer({ settings }: { settings: SiteSettingsDTO | null 
               </li>
             )}
             <li>
-              <Link href="/privacy" className="hover:underline" onClick={onPrivacy}>
+              <Link href="/legal/privacy" className="hover:underline" onClick={onPrivacy}>
                 {t("footer.privacy", "Политика конфиденциальности")}
               </Link>
             </li>
             <li>
-              <Link href="/terms" className="hover:underline" onClick={onTerms}>
+              <Link href="/legal/terms" className="hover:underline" onClick={onTerms}>
                 {t("footer.terms", "Условия обслуживания")}
               </Link>
             </li>

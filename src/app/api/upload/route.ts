@@ -23,6 +23,8 @@ const ALLOWED_ORIGINAL = [
   "image/avif",
   "image/tiff",
   "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ] as const;
 
 const MAX_INPUT_BYTES = 30 * 1024 * 1024; // 30MB
@@ -41,6 +43,8 @@ function extByType(t: string) {
     case "image/avif": return ".avif";
     case "image/tiff": return ".tiff";
     case "application/pdf": return ".pdf";
+    case "application/msword": return ".doc";
+    case "application/vnd.openxmlformats-officedocument.wordprocessingml.document": return ".docx";
     default: return "";
   }
 }
