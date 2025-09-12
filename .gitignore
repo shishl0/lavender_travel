@@ -18,8 +18,13 @@ yarn-error.log*
 tmp
 tmp/**
 
-# local uploads (dev only)
-# public/uploads/
+# local uploads (dev only) — do not track heavy images
+public/uploads/
+uploads/
+.data/
+
+# snapshots optionally large
+# public/cms-snapshot.json
 
 # vercel local state
 .vercel
