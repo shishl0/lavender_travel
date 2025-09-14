@@ -27,21 +27,22 @@
     "node": ">=18.18"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.620.0",
     "@babel/runtime": "^7.28.3",
     "@prisma/client": "^6.14.0",
+    "@vercel/analytics": "^1.5.0",
     "bcryptjs": "^3.0.2",
     "client-only": "^0.0.1",
     "i18next": "^25.3.4",
     "i18next-browser-languagedetector": "^8.2.0",
+    "mammoth": "^1.6.0",
     "next": "15.4.6",
     "next-auth": "^4.24.11",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-i18next": "^15.6.1",
     "recharts": "^3.1.2",
-    "sharp": "^0.34.3",
-    "mammoth": "^1.6.0",
-    "@aws-sdk/client-s3": "^3.620.0"
+    "sharp": "^0.34.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.0.0",

@@ -5,6 +5,7 @@ import I18nInit from "@/components/I18nInit";
 import ClientRoot from "@/components/ClientRoot";
 import { getActiveSettings } from "@/lib/cms-cache";
 import { detectLocale } from "@/lib/i18n-server";
+import { Analytics } from "@vercel/analytics/next";
 
 const SITE_URL =
   (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
@@ -54,6 +55,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Suspense fallback={null}><I18nInit /></Suspense>
         <Suspense fallback={null}><ClientRoot /></Suspense>
         <Suspense fallback={null}>{children}</Suspense>
+        {/* Vercel Analytics (дополнительно к нашей аналитике) */}
+        <Analytics />
       </body>
     </html>
   );

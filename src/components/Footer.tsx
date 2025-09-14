@@ -31,9 +31,18 @@ const toWaHref = (raw?: string) => {
   return `https://wa.me/${d}`;
 };
 
+type Locale = "ru" | "kk" | "en";
+const toLocale = (lng?: string): Locale => (lng?.startsWith("kk") ? "kk" : lng?.startsWith("en") ? "en" : "ru");
+function pickLocale<T extends { ru?: string | null; kk?: string | null; en?: string | null } | null | undefined>(l: T, locale: Locale = "ru"): string {
+  if (!l) return "";
+  const v = (l as any)[locale] ?? (l as any).ru ?? (l as any).en ?? (l as any).kk;
+  return typeof v === "string" ? v : "";
+}
+
 export default function Footer({ settings }: { settings: SiteSettingsDTO | null }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const year = new Date().getFullYear();
+  const locale = toLocale(i18n.language);
 
   // ===== DTO (с фолбэками) =====
   const orgName = settings?.brand || "Lavender Travel";
@@ -47,10 +56,9 @@ export default function Footer({ settings }: { settings: SiteSettingsDTO | null 
   const waHref = toWaHref(whatsappNumberRaw);
   const waDisplay = fmtKZPhone(whatsappNumberRaw);
 
-  // адрес — локализованный (ru → en → kk)
-  const addrLoc = settings?.address || null;
+  // адрес — локализованный по текущему языку (kk/en/ru) с безопасным фолбэком
   const addressFull =
-    addrLoc?.ru || addrLoc?.en || addrLoc?.kk ||
+    pickLocale(settings?.address, locale) ||
     "050000, Республика Казахстан, г. Алматы, улица Брусиловского, 167";
   const mapHref = `https://maps.google.com/?q=${encodeURIComponent(addressFull)}`;
 
