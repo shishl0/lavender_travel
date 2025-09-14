@@ -1,0 +1,14 @@
+# Exclude heavy local assets from deployment bundle
+public/uploads/
+uploads/
+.data/
+
+# Node/npm junk not needed in deployment payload (Vercel handles deps)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Local build outputs
+.next/cache/

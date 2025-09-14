@@ -1,0 +1,39 @@
+# next / node
+.next
+node_modules
+*.tsbuildinfo
+
+# IDE
+.idea/
+.vscode/
+
+# env
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+
+# logs / temp
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+tmp
+tmp/**
+.eslintcache
+coverage/
+.pnpm-store/
+
+# local uploads (dev only) — do not track heavy images
+public/uploads/
+uploads/
+.data/
+
+# snapshots optionally large
+# public/cms-snapshot.json
+
+# vercel local state
+.vercel
+todo.txt

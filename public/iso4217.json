@@ -1,0 +1,11 @@
+[
+  { "code": "AED", "name": "UAE Dirham" },
+  { "code": "TRY", "name": "Turkish Lira" },
+  { "code": "THB", "name": "Thai Baht" },
+  { "code": "VND", "name": "Vietnamese Dong" },
+  { "code": "EGP", "name": "Egyptian Pound" },
+  { "code": "GEL", "name": "Georgian Lari" },
+  { "code": "USD", "name": "US Dollar" },
+  { "code": "EUR", "name": "Euro" },
+  { "code": "KZT", "name": "Kazakhstani Tenge" }
+]

@@ -1,0 +1,62 @@
+{
+  "name": "lavender_travel",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "// ----- Prisma локалка": "",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:push": "prisma db push",
+    "// ----- Seed": "",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:seed:prod": "NODE_ENV=production tsx prisma/seed.ts",
+    "// ----- Snapshot локально (не на Vercel)": "",
+    "snapshot": "tsx scripts/snapshot-cms.ts",
+    "// ----- Build для Vercel с миграциями": "",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "// ----- (опц.) Одноразовый сид в билде — включи BUILD_SEED=1 в Vercel": "",
+    "vercel-build-seeding": "prisma generate && prisma migrate deploy && next build && sh -c 'if [ \"$BUILD_SEED\" = \"1\" ]; then npm run db:seed:prod; fi'",
+    "migrate:uploads": "tsx scripts/migrate-uploads-to-s3.ts"
+  },
+  "engines": {
+    "node": ">=18.18"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.28.3",
+    "@prisma/client": "^6.14.0",
+    "bcryptjs": "^3.0.2",
+    "client-only": "^0.0.1",
+    "i18next": "^25.3.4",
+    "i18next-browser-languagedetector": "^8.2.0",
+    "next": "15.4.6",
+    "next-auth": "^4.24.11",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-i18next": "^15.6.1",
+    "recharts": "^3.1.2",
+    "sharp": "^0.34.3",
+    "mammoth": "^1.6.0",
+    "@aws-sdk/client-s3": "^3.620.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "15.4.6",
+    "prisma": "^6.14.0",
+    "tailwindcss": "^4.0.0",
+    "tsx": "^4.20.4",
+    "typescript": "^5.0.0"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  }
+}

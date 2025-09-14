@@ -1,0 +1,343 @@
+{
+  "nav": {
+    "tours": "Destinations",
+    "reviews": "Reviews",
+    "about": "About",
+    "whatsapp": "WhatsApp",
+    "instagram": "Instagram",
+    "menu": "Menu"
+  },
+
+  "hero": {
+    "ctaPrimary": "Choose a tour"
+  },
+
+  "st": {
+    "fillHint": "Fill in and send via WhatsApp",
+    "collapse": "Collapse",
+    "clear": "Clear",
+    "from": "from:",
+    "dest": "country/city:",
+    "destPlaceholder": "Choose a country or city",
+    "dates": "dates:",
+    "datesPlaceholder": "Select a range",
+    "nightsShort": "nights",
+    "pax": "travellers:",
+    "adultsShort": "ad",
+    "childrenShort": "ch",
+    "adults": "Adults",
+    "children": "Children",
+    "childAgeLabel": "Child {{index}} age",
+    "done": "Done",
+    "apply": "Apply",
+    "contacts": "contacts:",
+    "name": "Name",
+    "phone": "Phone",
+    "namePlaceholder": "How should we address you?",
+    "phonePlaceholder": "+7 708 …",
+    "comment": "comments:",
+    "commentPlaceholder": "Wishes, special conditions…",
+    "chooseCountry": "Choose country",
+    "send": "Send"
+  },
+
+  "cal": {
+    "prev": "←",
+    "next": "→",
+    "nightsLabel": "Nights",
+    "weekdaysShort": ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
+  },
+
+  "wa": {
+    "title": "Tour request",
+    "name": "Name",
+    "phone": "Phone",
+    "destination": "Destination",
+    "partyAdults": "adults",
+    "partyChildren": "children",
+    "childrenAges": "ages",
+    "checkin": "Check-in",
+    "checkout": "Check-out",
+    "nights": "nights",
+    "departureFrom": "Departure from",
+    "comment": "Comment"
+  },
+
+  "stats": {
+    "ariaList": "Key statistics",
+    "goto": "Go to: {{label}}",
+    "defaults": {
+      "clientsLabel": "happy clients",
+      "yearsLabel": "in travel",
+      "ratingLabel": "average rating",
+      "clientsSuffix": "+",
+      "yearsSuffix": " yrs",
+      "monthsSuffix": " mo",
+      "ratingSuffix": "/5"
+    }
+  },
+
+  "teaser": {
+    "destinations": {
+      "title": "Popular destinations",
+      "viewAll": "View all",
+      "viewAllAria": "View all destinations",
+      "pricePrefix": "from"
+    }
+  },
+
+  "reviewsTeaser": {
+    "title": "Customer reviews",
+    "viewAll": "View all",
+    "viewAllAria": "View all reviews",
+    "empty": "No reviews yet — be the first!",
+    "leaveCta": "Leave a review",
+    "modalTitle": "Review",
+    "modalClose": "Close",
+    "openAria": "Open review: {{name}}",
+    "newBadge": "new"
+  },
+
+  "date": {
+    "today": "today",
+    "yesterday": "yesterday",
+    "monthsShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+  },
+
+  "review": {
+    "modal": {
+      "title": "Leave a review",
+      "close": "Close"
+    },
+    "form": {
+      "aria": "Review form",
+      "subtitle": "Share your experience — it helps other travelers.",
+      "nameLabel": "Name *",
+      "namePlaceholder": "How should we address you?",
+      "ratingLabel": "Your rating",
+      "textLabel": "Review text *",
+      "textPlaceholder": "What you liked, how it went…",
+      "photosLabel": "Photos (up to 5)",
+      "photosHint": "PNG, JPG, WebP, HEIC/HEIF — we'll convert if needed. Max 5 MB/file.",
+      "submit": "Submit review",
+      "starAria": "{{n}} out of 5",
+      "success": "Thank you! We'll publish your review after moderation.",
+      "errors": {
+        "required": "Name and text are required",
+        "submitFailed": "Could not submit",
+        "unknown": "Submission error"
+      }
+    }
+  },
+
+  "aboutTeaser": {
+    "kicker": "About us",
+    "title": "Lavender Travel — a people-first agency",
+    "lead": "We’ll tailor and book everything end-to-end. Honest advice, attention to detail, and support at every step.",
+    "point1": "Turn-key selection & booking",
+    "point2": "Honest, no-nonsense recommendations",
+    "point3": "We stay in touch until you return",
+    "moreCta": "Learn more",
+    "moreAria": "More about the company",
+    "instagram": "Instagram",
+    "instagramAria": "We’re on Instagram",
+    "photoAlt": "Lavender Travel — a calm, caring service vibe",
+    "noteTitle": "Less noise — more care",
+    "noteSub": "Maximum attention to your holiday.",
+    "callCta": "Call us",
+    "callAria": "Call us: {{phone}}"
+  },
+
+  "footer": {
+    "instagram": "Instagram",
+    "instagramAria": "Instagram",
+    "whatsapp": "WhatsApp",
+    "whatsappAria": "WhatsApp",
+    "contacts": "Contacts",
+    "phone": "Phone",
+    "address": "Address",
+    "company": "Company",
+    "about": "About us",
+    "certificate": "Certificate",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "copyright": "© {{year}} {{org}}. All rights reserved."
+  },
+
+  "months": {
+    "jan": "Jan",
+    "feb": "Feb",
+    "mar": "Mar",
+    "apr": "Apr",
+    "may": "May",
+    "jun": "Jun",
+    "jul": "Jul",
+    "aug": "Aug",
+    "sep": "Sep",
+    "oct": "Oct",
+    "nov": "Nov",
+    "dec": "Dec"
+  },
+
+  "common": {
+    "na": "—",
+    "close": "Close"
+  },
+
+  "climate": {
+    "title": "Climate by month",
+    "metric": "Metric",
+    "air": "Air, °C",
+    "water": "Water, °C",
+    "humidity": "Humidity, %",
+    "legend": "Legend:",
+    "uv": {
+      "low": "low UV",
+      "moderate": "moderate",
+      "high": "high",
+      "veryHigh": "very high+"
+    }
+  },
+
+  "destination": {
+    "time": {
+      "title": "Current time",
+      "empty": "Time zones not selected"
+    },
+    "info": {
+      "title": "Reference info",
+      "capital": "Capital:",
+      "languages": "Languages:",
+      "currency": "Currency:"
+    },
+    "cities": { "title": "Cities" },
+    "faq": {
+      "visa": "Visa",
+      "entry": "Entry requirements",
+      "return": "Return requirements",
+      "empty": "no data"
+    },
+    "poi": { "title": "Points of interest" },
+    "cta": {
+      "pick": { "title": "Ready to choose a tour?" }
+    }
+  },
+
+  "destinations": {
+    "title": "Destinations",
+    "fallbackTitle": "Destination"
+  },
+
+  "reviews": {
+    "title": "Reviews",
+    "subtitle": "Thank you for sharing your impressions — it helps other travelers.",
+    "list": { "aria": "Reviews list" },
+    "empty": "No reviews yet — be the first!",
+    "openAria": "Open review",
+    "new": "new",
+    "pagination": {
+      "aria": "Reviews pagination",
+      "prev": "← Prev",
+      "next": "Next →"
+    },
+    "form": {
+      "title": "Leave a review",
+      "nameLabel": "Name *",
+      "namePh": "How should we address you",
+      "ratingLabel": "Your rating",
+      "textLabel": "Review text *",
+      "textPh": "What you liked, how it went…",
+      "photosLabel": "Photos (up to 5)",
+      "remove": "Remove",
+      "add": "Add",
+      "left": "{{n}} left",
+      "formatHint": "PNG, JPG, WebP, HEIC/HEIF — up to 5 images.",
+      "submit": "Submit review",
+      "sending": "Sending…",
+      "ok": "Thanks! We'll publish your review after moderation.",
+      "errors": {
+        "required": "Name and text are required",
+        "submit": "Failed to submit",
+        "generic": "Submission error"
+      }
+    },
+    "modal": { "title": "Review" }
+  },
+
+  "uploader": {
+    "remove": "Remove",
+    "addTitle": "Add photos",
+    "add": "Add",
+    "left": "{{n}} left",
+    "loading": "Uploading…"
+  },
+
+  "about": {
+    "hero": {
+      "kicker": "About us",
+      "title": "Stress-free holidays — we handle everything",
+      "works": "has been",
+      "sinceYear": "since {{y}}.",
+      "forYou": "for you.",
+      "desc": "We arrange tours online, work only with trusted partners, and stay in touch 24/7."
+    },
+    "stats": {
+      "happyTourists": "happy travelers",
+      "support": "support",
+      "official": "Official",
+      "certs": "licenses & certificates",
+      "certificateSoon": "certificate coming soon"
+    },
+    "why": {
+      "title": "Why travelers choose us",
+      "card1": { "title": "Trusted tour operators only", "text": "We work with reliable partners and insurers. Hotels match the stated category." },
+      "card2": { "title": "24/7 support", "text": "Round-the-clock assistance with flights, transfers, check-in, and more." },
+      "card3": { "title": "Everything online", "text": "Contract, payment, and documents — all remote. Save time with a transparent process." },
+      "card4": { "title": "Strong prices & hot deals", "text": "We hunt for great offers and alert you about discounts for your destinations." }
+    },
+    "safety": {
+      "title": "Safety and guarantees — our priority",
+      "text": "We’re with you at every step. If anything goes off-plan, we’re already on it.",
+      "point1": "Quality control — we follow up after each trip",
+      "point2": "Detailed country/visa/insurance guides",
+      "point3": "Clear policy for changes and refunds"
+    },
+    "docs": {
+      "title": "Documents",
+      "certificate": "Certificate",
+      "certificatePdf": "Certificate (PDF)",
+      "certificateScan": "Certificate scan",
+      "certificatePlaceholder": "A certificate scan will appear once uploaded to the CMS",
+      "openFile": "Open file",
+      "noFile": "No file",
+      "certificateNone": "Certificate (no file)",
+      "terms": "Terms of service",
+      "privacy": "Privacy policy",
+      "sinceShort": "since",
+      "yearShort": "",
+      "addressTBD": "Address to be confirmed"
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "q1": "What’s included in the tour?",
+      "a1": "Flights, transfer, accommodation, meal plan, insurance, and support. Details depend on destination and hotel.",
+      "q2": "Can everything be arranged online?",
+      "a2": "Yes. Contract, payment, and documents are handled remotely. Tickets and vouchers arrive via WhatsApp 1–2 days before departure.",
+      "q3": "Do you help with visas?",
+      "a3": "We provide visa support: document list, visa center appointment, bookings, and insurance.",
+      "q4": "How to track hot deals?",
+      "a4": "Tell us your dates/destinations — we’ll enable alerts and send the best options."
+    },
+    "contacts": {
+      "title": "Contact us",
+      "phone": "Phone",
+      "whatsapp": "WhatsApp",
+      "instagram": "Instagram",
+      "address": "Address",
+      "pending": "Contact details to be confirmed.",
+      "ask": "Ask a question"
+    },
+    "map": { "title": "Office map" },
+    "final": { "title": "Ready to travel?", "cta": "Choose a tour" }
+  }
+}

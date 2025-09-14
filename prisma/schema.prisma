@@ -1,0 +1,311 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  // через Supabase pooler — быстрее и стабильнее для прод-ворклоада
+  url       = env("DATABASE_URL")
+  // прямое подключение для миграций (обычно db.xxx.supabase.co с sslmode=require)
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+// ----------------------
+// Enums
+// ----------------------
+
+enum ActivityStatus {
+  OK
+  ERROR
+}
+
+enum SubmissionStatus {
+  NEW
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum HeroVariant {
+  DEFAULT
+  MINIMAL
+  VISUAL_LEFT
+  VISUAL_RIGHT
+}
+
+// ----------------------
+// Content models
+// ----------------------
+
+// 1) Несколько SiteSettings, но в UI/сервере гарантируем, что активен ровно один.
+//    Используем поля для брендовой шапки + meta.
+model SiteSettings {
+  id       String  @id @default(uuid())
+  isActive Boolean @default(false)
+
+  brandName    String
+  brandTagline String?
+
+  metaTitle       String
+  metaDescription String
+  ogImageUrl      String?
+
+  phoneNumber    String?
+  whatsappNumber String?
+  instagramUrl   String?
+
+  statsClients   Int?
+  statsRating    Float?
+  inTourismSince DateTime?
+  statsMode      String?
+
+  address        Json?
+  certificateUrl String?
+
+  privacyPolicy  Json?
+  termsOfService Json?
+
+  privacyPolicyDocUrls  Json?
+  termsOfServiceDocUrls Json?
+
+  mapEmbedUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 2) Несколько Hero-конфигураций, активной должна быть одна (через isActive = true)
+model Hero {
+  id       String      @id @default(uuid())
+  isActive Boolean     @default(false)
+  variant  HeroVariant @default(DEFAULT)
+
+  kicker      Json
+  titleTop    Json
+  titleBottom Json
+  subtitle    Json
+
+  imageUrl String?
+  imageAlt Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 3) Каталог направлений (макс. 8 активных — проверим в приложении)
+//    порядок карточек — через sortOrder (drag&drop)
+// prisma/schema.prisma
+model Destination {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  title     Json                         // {ru?, kk?, en?}
+  isActive  Boolean  @default(true)
+  showOnHome Boolean @default(false)
+  sortOrder Int      @default(0)
+
+  // Витрина / карточка
+  imageUrl  String?                      // превьюшка для списка/шеринга
+
+  // Будем внедрять позже (оставляем, но выключим в коде)
+  /// priceFrom     Int?
+  /// allowMinPrice Boolean @default(false)
+
+  // Контент страницы
+  descriptionHtml Json?                  // {ru?, kk?, en?} — HTML
+  cities         Json?                   // {ru?:string[], kk?:string[], en?:string[]}
+
+  // Хиро/фон
+  heroImages     String[] @default([])   // до 10 изображений
+
+  // Базовая инфа
+  basics Json?                           // { timezones?:string[], capital?:{ru,kk,en}, languages?:{ru[],kk[],en[]}, currencyCode?:string, currencyPerKZT?:number }
+
+  // FAQ
+  faqVisa   Json?                        // {ru?, kk?, en?} — абзац
+  faqEntry  Json?                        // {ru?:string[], kk?:string[], en?:string[]}
+  faqReturn Json?                        // {ru?:string[], kk?:string[], en?:string[]}
+
+  // Достопримечательности (сторис)
+  poi Json?                              // Array<{ title:L, imageUrl?:string, blurb?:L }>
+
+  // Валюта (нужна currency API)
+  currencyCode       String?   @db.VarChar(3)
+  currencyRateToKzt  Float?
+  currencyBase       String?   @default("KZT") @db.VarChar(3)
+  currencyProvider   String?
+  currencyUpdatedAt  DateTime?
+
+  // Климат
+  climate   DestinationClimate?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DestinationClimate {
+  id             String      @id @default(uuid())
+  destinationId  String      @unique
+  destination    Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  source    String?
+  latitude  Float?
+  longitude Float?
+
+  months    Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ----------------------
+// Forms
+// ----------------------
+
+// 4) Отправленные заявки из Contact формы
+model FormSubmission {
+  id        String  @id @default(uuid())
+  name      String
+  phone     String
+  tour      String
+  departure String
+  budget    String?
+
+  adults        Int
+  childrenCount Int
+  childrenAges  Json // массив чисел
+
+  checkIn  DateTime?
+  checkOut DateTime?
+  message  String?
+
+  locale String? // ru/kk/en
+  status SubmissionStatus @default(NEW)
+
+  createdAt DateTime @default(now())
+}
+
+// 5) Черновики форм (не отправленные)
+model FormDraft {
+  id        String   @id @default(uuid())
+  data      Json // “снимок” всей формы
+  locale    String?
+  createdAt DateTime @default(now())
+}
+
+// ----------------------
+// Analytics (собственные события + суточная агрегация)
+// Umami используем как основную веб-метрику,
+// а сюда пишем свои бизнес-события (клики WhatsApp, отправка формы и т.п.)
+// ----------------------
+
+model AnalyticsEvent {
+  id       String  @id @default(uuid())
+  type     String
+  path     String?
+  referrer String?
+  device   String?
+  locale   String?
+  utm      Json?
+
+  // Денормализованные поля для быстрых группировок
+  source   String? // google | instagram | facebook | tiktok | direct | referral host | etc
+  medium   String? // cpc | social | email | ...
+  campaign String?
+  channel  String? // paid | organic | social | referral | direct
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([type, createdAt])
+  @@index([channel, createdAt])
+  @@index([source, createdAt])
+}
+
+// Суточная агрегированная таблица — для хранения статистики после 180 дней
+model AnalyticsDaily {
+  id     String   @id @default(uuid())
+  day    DateTime // дата (00:00:00)
+  type   String // тип события (или 'all')
+  path   String? // опционально по пути
+  locale String? // опционально по локали
+  count  Int      @default(0)
+
+  @@unique([day, type, path, locale]) // уникальная “ячейка” агрегата
+}
+
+model User {
+  id           String  @id @default(uuid())
+  email        String  @unique
+  name         String?
+  passwordHash String
+  role         Role    @default(ADMIN)
+  image        String?
+
+  lastLoginAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions Session[]
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionToken String   @unique
+  expires      DateTime
+}
+
+model Activity {
+  id     String         @id @default(cuid())
+  ts     DateTime       @default(now())
+  action String
+  route  String
+  method String
+  status ActivityStatus @default(OK)
+
+  // кто
+  actorId    String?
+  actorEmail String?
+  role       String?
+
+  // что меняли (по желанию)
+  targetType String?
+  targetId   String?
+
+  // мета
+  ip         String?
+  ua         String?
+  durationMs Int?
+  payload    Json?
+  diff       Json?
+  error      String?
+  meta       Json?
+
+  @@index([ts], map: "idx_activity_ts")
+  @@index([action, ts], map: "idx_activity_action_ts")
+  @@index([actorId, ts], map: "idx_activity_actor_ts")
+}
+
+model Review {
+  id     String   @id @default(cuid())
+  name   String
+  text   String   @db.Text
+  images String[] @default([])
+
+  rating Int @default(5) @db.SmallInt
+
+  isActive Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, createdAt])
+}

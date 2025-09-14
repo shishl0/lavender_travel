@@ -1,0 +1,36 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { withAudit } from "@/lib/audit";
+import { requireRole } from "@/lib/require-auth";
+import { invalidateDestinations } from "@/lib/cms-cache";
+
+export const dynamic = "force-dynamic";
+
+type Payload = { id?: string; isActive?: boolean; showOnHome?: boolean };
+
+async function _POST(req: Request) {
+  await requireRole(["ADMIN", "EDITOR"]);
+  const body = (await req.json().catch(() => ({}))) as Payload;
+  const id = typeof body.id === "string" ? body.id : "";
+
+  if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+
+  const data: Record<string, any> = {};
+  if (typeof body.isActive === "boolean") data.isActive = body.isActive;
+  if (typeof body.showOnHome === "boolean") data.showOnHome = body.showOnHome;
+
+  if (!Object.keys(data).length) {
+    return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
+  }
+
+  await prisma.destination.update({ where: { id }, data });
+  invalidateDestinations();
+  return NextResponse.json({ ok: true });
+}
+
+export const POST = withAudit(
+  "destinations.admin.toggle",
+  _POST,
+  (_req, _ctx, payload?: Payload | null) => ({ type: "Destination", id: payload?.id ?? null }),
+  "json"
+);
