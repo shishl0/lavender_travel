@@ -1,7 +1,1 @@
-{
-  "crons": [
-    { "path": "/api/analytics/rollup", "schedule": "0 2 * * *" },
-    { "path": "/api/activity/cleanup", "schedule": "0 3 * * 0" },
-    { "path": "/api/uploads/cleanup", "schedule": "0 4 * * *" }
-  ]
-}
+{}
