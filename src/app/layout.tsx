@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import I18nInit from "@/components/I18nInit";
 import ClientRoot from "@/components/ClientRoot";
+import ChatMini from "@/components/ChatMini";
 import { getActiveSettings } from "@/lib/cms-cache";
 import { detectLocale } from "@/lib/i18n-server";
 import { Analytics } from "@vercel/analytics/next";
@@ -55,6 +56,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Suspense fallback={null}><I18nInit /></Suspense>
         <Suspense fallback={null}><ClientRoot /></Suspense>
         <Suspense fallback={null}>{children}</Suspense>
+        <Suspense fallback={null}><ChatMini /></Suspense>
         {/* Vercel Analytics (дополнительно к нашей аналитике) */}
         <Analytics />
       </body>

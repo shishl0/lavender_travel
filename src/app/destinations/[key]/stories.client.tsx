@@ -119,10 +119,10 @@ function StoryPlayer({
       {/* крестик — крупный */}
       <button
         onClick={onClose}
-        className="absolute right-6 top-6 z-[80] grid h-11 w-11 place-items-center rounded-full bg-white/15 text-2xl leading-none text-white backdrop-blur-md hover:bg-white/25"
+        className="absolute right-6 top-6 z-[80] flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-md hover:bg-white/25"
         aria-label="Закрыть"
       >
-        ×
+        <span className="text-[30px] leading-[1]">×</span>
       </button>
 
       {/* зоны клика назад/вперёд */}

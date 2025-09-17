@@ -18,12 +18,37 @@ export async function POST(req: Request) {
     let bytes: Buffer | null = null;
 
     if (url.startsWith("/uploads/")) {
-      // Локальная совместимость (dev)
+      // Локальная совместимость (dev) с фоллбеком в S3
       const pubDir = path.join(process.cwd(), "public");
       const abs = path.normalize(path.join(pubDir, url));
       const uploadsDir = path.join(pubDir, "uploads");
       if (!abs.startsWith(uploadsDir)) return bad("Forbidden path", 403);
-      bytes = await fs.readFile(abs);
+      try {
+        bytes = await fs.readFile(abs);
+      } catch (e) {
+        // Файл локально отсутствует — пробуем достать из S3 по ключу
+        try {
+          const key = keyFromUrl(url);
+          const bucket = process.env.S3_BUCKET || "";
+          if (key && bucket) {
+            const s3 = getS3();
+            const obj = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
+            const stream = obj.Body as unknown as NodeJS.ReadableStream | null;
+            if (!stream) throw new Error("Empty S3 body");
+            bytes = await new Promise<Buffer>((resolve, reject) => {
+              const chunks: Buffer[] = [];
+              stream.on("data", (c: Buffer) => chunks.push(Buffer.from(c)));
+              stream.on("error", reject);
+              stream.on("end", () => resolve(Buffer.concat(chunks)));
+            });
+          } else {
+            return bad("File not found", 404);
+          }
+        } catch (e2) {
+          console.error("render-docx s3 fallback error", e2);
+          return bad("File not found", 404);
+        }
+      }
     } else if (/^https?:\/\//i.test(url)) {
       // Попытка скачать из S3 (предпочтительно через SDK, иначе HTTP)
       try {

@@ -298,10 +298,7 @@ function Hero({ images, title }: { images: string[]; title: string }) {
         <div className="absolute inset-0 scale-110 animate-[heroIn_0.25s_ease-out_forwards]">
           <HeroSlideshow images={images} className="h-full rounded-2xl" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/15 to-transparent" />
-        <div className="absolute bottom-6 left-6 right-6 text-white drop-shadow">
-          <h1 className="text-3xl md:text-5xl font-extrabold">{title}</h1>
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/20 to-transparent" />
       </div>
     </div>
   );
