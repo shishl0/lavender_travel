@@ -336,8 +336,178 @@
       "address": "Address",
       "pending": "Contact details to be confirmed.",
       "ask": "Ask a question"
+  },
+  "map": { "title": "Office map" },
+  "final": { "title": "Ready to travel?", "cta": "Choose a tour" }
+  },
+
+  "chatMini": {
+    "button": {
+      "title": "Chat with Lavender",
+      "subtitle": "Replies in minutes"
     },
-    "map": { "title": "Office map" },
-    "final": { "title": "Ready to travel?", "cta": "Choose a tour" }
+    "aria": {
+      "open": "Open chat with a travel expert",
+      "close": "Close chat"
+    },
+    "actions": {
+      "openWhatsapp": "Message on WhatsApp",
+      "restart": "Start again",
+      "send": "Send"
+    },
+    "form": {
+      "messageLabel": "Message",
+      "messagePlaceholder": "Ask anything"
+    },
+    "messages": {
+      "welcome": "Hi! I’ll help you plan a trip and cover the key questions. Where should we start?",
+      "openWhatsapp": "Opening WhatsApp — a manager will be with you in moments!",
+      "unknownFaq": "I don’t have that answer yet. Shall we switch to WhatsApp?",
+      "fallbackWhatsapp": "A live manager can handle this faster. Let’s jump to WhatsApp.",
+      "fallbackStandard": "I only understand the prepared replies for now. Pick one of the prompts below or tap WhatsApp for a live manager.",
+      "searchResults": "Here are destinations that look like a match:"
+    },
+    "summary": {
+      "intro": "Great, I’ve saved everything:",
+      "empty": "Ready to hand you off to a manager for tailored options.",
+      "labels": {
+        "destination": "Destination",
+        "departureCity": "Departure city",
+        "when": "Travel time",
+        "duration": "Duration",
+        "budget": "Budget",
+        "travelers": "Group",
+        "accommodation": "Accommodation",
+        "mealPlan": "Meal plan",
+        "extras": "Additional wishes"
+      }
+    },
+    "whatsappMessage": {
+      "default": "Hi! We’d love to plan a trip with the Lavender Travel team.",
+      "intro": "Hello Lavender Travel! Here’s a quick snapshot of our request:",
+      "preface": "Trip preferences:",
+      "outro": "Could you share a few options that might fit?",
+      "direct": "Hi there! I’m reaching out from the Lavender chat assistant on your website to talk about a trip."
+    },
+    "options": {
+      "initial": {
+        "pickTour": "Plan a trip",
+        "faq": "FAQ",
+        "deals": "Deals & specials"
+      },
+      "faq": {
+        "documents": "What documents do I need?",
+        "payment": "How does payment work?",
+        "kids": "Travelling with kids",
+        "refund": "Can I get a refund?",
+        "insurance": "Is insurance included?",
+        "luggage": "Baggage and transfers",
+        "transfers": "Transfer options",
+        "weather": "Weather by months",
+        "pickTour": "Pick a tour"
+      },
+      "faqFollowup": {
+        "more": "Ask another question",
+        "pickTour": "Pick a tour"
+      },
+      "destinationsViewAll": "View all destinations",
+      "destinationOther": "Another destination",
+      "when": {
+        "soon": "Within the next month",
+        "twoThree": "In 2–3 months",
+        "seasonSummer": "By early summer",
+        "seasonAutumn": "By autumn",
+        "seasonWinter": "By winter",
+        "exact": "I have exact dates"
+      }
+    },
+    "steps": {
+      "destination": {
+        "message": "Let’s choose the country or resort that interests you."
+      },
+      "departure": {
+        "message": "Which city is most convenient for departure?",
+        "options": {
+          "almaty": "Almaty",
+          "astana": "Astana",
+          "shymkent": "Shymkent",
+          "other": "Another city"
+        }
+      },
+      "dates": { "message": "When are you planning to travel?" },
+      "duration": {
+        "message": "How long would you like the trip to be?",
+        "options": {
+          "fiveSeven": "5–7 nights",
+          "eightTen": "8–10 nights",
+          "moreTen": "More than 10 nights",
+          "needHelp": "Let’s decide together"
+        }
+      },
+      "budget": {
+        "message": "What budget per person should we aim for?",
+        "options": {
+          "low": "Up to 500 000 ₸",
+          "medium": "500 000 – 800 000 ₸",
+          "high": "800 000 – 1 200 000 ₸",
+          "premium": "Above 1 200 000 ₸",
+          "consult": "Let’s discuss with a manager"
+        }
+      },
+      "travelers": {
+        "message": "Who will be travelling?",
+        "options": {
+          "couple": "Couple",
+          "family": "With kids",
+          "friends": "Group of friends",
+          "solo": "Solo trip"
+        }
+      },
+      "accommodation": {
+        "message": "What kind of accommodation do you prefer?",
+        "options": {
+          "fiveStar": "Premium 5★",
+          "fourStar": "Reliable 4★",
+          "boutique": "Boutique hotel",
+          "villa": "Villa or apartment",
+          "advice": "Need advice"
+        }
+      },
+      "mealPlan": {
+        "message": "Which meal plan works best?",
+        "options": {
+          "allInclusive": "All inclusive",
+          "halfBoard": "Half board",
+          "breakfast": "Breakfast only",
+          "roomOnly": "No meals",
+          "flexible": "Open to suggestions"
+        }
+      },
+      "extras": {
+        "message": "What else should we keep in mind?",
+        "options": {
+          "sea": "Beach escape",
+          "spa": "Spa & relaxation",
+          "active": "Excursions & activities",
+          "manager": "Talk to a manager"
+        }
+      },
+      "faqMenu": {
+        "message": "FAQ — choose the topic you’re curious about."
+      }
+    },
+    "faq": {
+      "responses": {
+        "documents": "Most destinations require a passport valid for at least 6 months after return. If a visa is needed, we’ll share the checklist and help with the appointment.",
+        "payment": "Pay by bank transfer, card, or cash. A 30–50% deposit is usually enough — the balance is due before departure.",
+        "kids": "We’ll recommend family-friendly hotels with kids’ clubs, pools, and nanny services — just tell us the ages.",
+        "refund": "Refund terms depend on the operator and fare. We’ll outline potential fees and deadlines in advance.",
+        "insurance": "A basic insurance policy is typically included. We can expand the coverage to match your plans.",
+        "luggage": "Airlines set the baggage rules. We’ll confirm what’s included and help add extra allowance if you need it.",
+        "transfers": "An airport–hotel transfer comes by default. Private cars and minivans are available too.",
+        "weather": "Each destination page has seasonal highlights and a month-by-month temperature chart. I can send the link and help pick the best timing.",
+        "deals": "We track promos and specials constantly. A manager will check current prices and shortlist the best fits."
+      }
+    }
   }
 }

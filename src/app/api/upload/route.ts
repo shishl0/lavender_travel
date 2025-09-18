@@ -9,6 +9,8 @@ import { authOptions } from "@/lib/auth";
 import { keyFromUrl, publicUrlForKey, s3DeleteByKey, s3PutObject, getUploadPrefix } from "@/lib/s3";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
 /**
  * Оригиналы, которые разрешаем сохранять как есть для ADMIN/EDITOR.

@@ -50,13 +50,15 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const lang = await detectLocale();
+  const settings = await getActiveSettings();
+  const waNumber = settings?.whatsappNumber ?? null;
   return (
     <html lang={lang} suppressHydrationWarning>
       <body className="antialiased">
         <Suspense fallback={null}><I18nInit /></Suspense>
         <Suspense fallback={null}><ClientRoot /></Suspense>
         <Suspense fallback={null}>{children}</Suspense>
-        <Suspense fallback={null}><ChatMini /></Suspense>
+        <Suspense fallback={null}><ChatMini waNumber={waNumber} /></Suspense>
         {/* Vercel Analytics (дополнительно к нашей аналитике) */}
         <Analytics />
       </body>
