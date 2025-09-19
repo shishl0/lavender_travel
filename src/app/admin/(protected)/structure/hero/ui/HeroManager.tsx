@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import HeroPreview from "./HeroPreview";
+import HeroImagesUploader from "../../destinations/ui/HeroImagesUploader";
 
 type L = { ru: string; kk: string; en: string };
 type HeroRec = {
@@ -64,7 +65,7 @@ export default function HeroManager({
   );
 
   const [lang, setLang] = useState<keyof L>("ru");
-  const [busy, setBusy] = useState<null | "save" | "upload" | "activate" | "delete">(null);
+  const [busy, setBusy] = useState<null | "save" | "activate" | "delete">(null);
   const [isPending, startTransition] = useTransition();
 
   function selectProfile(id: string) {
@@ -91,23 +92,6 @@ export default function HeroManager({
 
   function setL(field: keyof HeroRec, l: keyof L, v: string) {
     setForm((p) => ({ ...p, [field]: { ...(p[field] as L), [l]: v } as any }));
-  }
-
-  async function uploadImage(file: File) {
-    setBusy("upload");
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const j = await res.json();
-      if (!res.ok || !j?.url) throw new Error("upload failed");
-      setForm((p) => ({ ...p, imageUrl: j.url as string }));
-    } catch (e) {
-      alert("Ошибка загрузки изображения");
-      console.error(e);
-    } finally {
-      setBusy(null);
-    }
   }
 
   async function save() {
@@ -258,36 +242,18 @@ export default function HeroManager({
           ))}
 
           {/* Блок изображения — только загрузка файла, без текстового инпута URL */}
-          <div className="grid gap-1">
-            <label className="text-sm">Изображение</label>
-            <div className="flex items-center gap-2">
-              <label className="h-[60px] w-30 rounded-xl border border-slate-200 bg-white px-3 py-3 text-[15px] leading-[1.2] outline-none focus:ring-2 focus:ring-violet-200 cursor-pointer press">
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) uploadImage(f);
-                  }}
-                />
-                {busy === "upload" ? "Загрузка…" : "Загрузить файл"}
-              </label>
-              {form.imageUrl && (
-                <span className="text-xs text-slate-500 truncate">
-                  {form.imageUrl.split("/").pop()}
-                </span>
-              )}
-            </div>
-
-            {form.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={form.imageUrl} alt="preview" className="mt-2 max-h-48 rounded-xl border shadow-sm" />
-            ) : (
-              <div className="mt-2 h-28 rounded-xl border grid place-items-center text-xs text-slate-400">
-                Файл не выбран
-              </div>
-            )}
+          <div className="grid gap-2">
+            <HeroImagesUploader
+              images={form.imageUrl ? [form.imageUrl] : []}
+              onChange={(urls) =>
+                setForm((prev) => ({
+                  ...prev,
+                  imageUrl: urls[0] ?? null,
+                }))
+              }
+              max={1}
+              disabled={!!busy || isPending}
+            />
           </div>
 
           <div className="pt-2">
